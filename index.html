@@ -333,10 +333,19 @@
     .modal-poster {
       width: 100%;
       border-radius: 16px;
+      aspect-ratio: 2/3;
+      object-fit: cover;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
     }
 
     .modal-info {
-      padding: 40px 40px 40px 0;
+      padding: 24px;
+    }
+
+    @media (min-width: 768px) {
+      .modal-info {
+        padding: 40px 40px 40px 0;
+      }
     }
 
     .modal-title {
