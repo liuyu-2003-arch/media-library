@@ -522,7 +522,8 @@
     <div class="modal-content">
       <button class="modal-close" onclick="closeModal()">✕</button>
       <div class="modal-body">
-        <img class="modal-poster" id="modalPoster" src="" alt="">
+        <img class="modal-poster" id="modalPoster" src="" alt="" style="display:none">
+        <div id="modalPosterPlaceholder" style="display:none;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;aspect-ratio:2/3;align-items:center;justify-content:center;color:rgba(255,255,255,0.15);font-size:0.9rem;text-align:center;padding:20px;"></div>
         <div class="modal-info">
           <h2 class="modal-title" id="modalTitle"></h2>
           <div class="modal-meta">
@@ -594,7 +595,10 @@
 
       grid.innerHTML = filtered.map(m => `
         <div class="movie-card" onclick="openModal('${m.id}')">
-          ${m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.titleCn || m.title}">` : '<div class="movie-poster" style="background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;color:#333;font-size:3rem;">🎬</div>'}
+          ${m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.titleCn || m.title}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+          <div class="movie-poster" style="background:linear-gradient(135deg,#1a1a2e,#16213e);display:${m.poster ? 'none' : 'flex'};align-items:center;justify-content:center;color:rgba(255,255,255,0.1);font-size:0.7rem;text-align:center;padding:10px;">
+            ${m.titleCn || m.title}
+          </div>
           <div class="movie-tags">
             <span class="tag ${m.type === 'movie' ? 'tag-movie' : 'tag-tv'}">${m.type === 'movie' ? '电影' : '剧集'}</span>
             ${m.resources && m.resources.length > 0 ? '<span class="tag tag-resource">▶ 可播放</span>' : ''}
@@ -621,8 +625,15 @@
       const m = data.movie;
       if (!m) return;
 
-      document.getElementById('modalPoster').src = m.poster || '';
-      document.getElementById('modalPoster').style.display = m.poster ? 'block' : 'none';
+      if (m.poster) {
+        document.getElementById('modalPoster').src = m.poster;
+        document.getElementById('modalPoster').style.display = 'block';
+        document.getElementById('modalPosterPlaceholder').style.display = 'none';
+      } else {
+        document.getElementById('modalPoster').style.display = 'none';
+        document.getElementById('modalPosterPlaceholder').style.display = 'flex';
+        document.getElementById('modalPosterPlaceholder').textContent = m.titleCn || m.title;
+      }
       document.getElementById('modalTitle').textContent = m.titleCn || m.title;
       document.getElementById('modalYear').textContent = m.year || '';
       document.getElementById('modalGenre').textContent = m.genre || '';
