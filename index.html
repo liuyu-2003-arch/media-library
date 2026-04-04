@@ -19,7 +19,6 @@
       min-height: 100vh;
     }
 
-    /* 背景效果 */
     body::before {
       content: '';
       position: fixed;
@@ -43,62 +42,81 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 24px;
-      background: rgba(10, 10, 15, 0.8);
+      padding: 14px 20px;
+      background: rgba(10, 10, 15, 0.85);
       backdrop-filter: blur(20px);
       border-bottom: 1px solid rgba(255,255,255,0.05);
+      gap: 16px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .filter-btn {
+      padding: 7px 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: #666;
+      border-radius: 18px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .filter-btn:hover {
+      border-color: rgba(255,255,255,0.15);
+      color: #aaa;
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
+      border-color: rgba(139, 92, 246, 0.45);
+      color: #fff;
     }
 
     .logo {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
     }
 
     .logo-icon {
-      font-size: 1.5rem;
+      font-size: 1.3rem;
     }
 
     .logo-text {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 500;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #60a5fa 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
-    .logo-sub {
-      font-size: 0.65rem;
-      color: #555;
-      letter-spacing: 0.15em;
-      display: none;
-    }
-
-    @media (min-width: 768px) {
-      .logo-sub {
-        display: block;
-      }
-    }
-
-    /* 搜索 */
     .search-wrapper {
       position: relative;
+      flex-shrink: 0;
     }
 
     .search-icon {
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
+      border-radius: 10px;
       cursor: pointer;
-      font-size: 1rem;
-      transition: all 0.3s ease;
+      font-size: 0.9rem;
+      transition: all 0.25s ease;
     }
 
     .search-icon:hover {
@@ -109,27 +127,29 @@
     .search-expanded {
       position: absolute;
       right: 0;
-      top: 0;
-      width: 280px;
+      top: 50%;
+      transform: translateY(-50%) scale(0.9);
+      width: 240px;
       opacity: 0;
       pointer-events: none;
-      transition: all 0.3s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .search-expanded.active {
       opacity: 1;
       pointer-events: auto;
+      transform: translateY(-50%) scale(1);
     }
 
     .search-box {
       display: flex;
       align-items: center;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(139, 92, 246, 0.4);
+      background: rgba(20, 20, 30, 0.95);
+      border: 1px solid rgba(139, 92, 246, 0.5);
       border-radius: 12px;
-      padding: 10px 14px;
-      gap: 10px;
-      box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
+      padding: 8px 12px;
+      gap: 8px;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.5), 0 0 20px rgba(139, 92, 246, 0.15);
     }
 
     .search-box input {
@@ -138,7 +158,7 @@
       border: none;
       outline: none;
       color: #e0e0e0;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     .search-box input::placeholder {
@@ -148,55 +168,28 @@
     .search-close {
       cursor: pointer;
       color: #666;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
+      transition: color 0.2s;
     }
 
-    /* 筛选栏 */
-    .filters {
-      display: flex;
-      gap: 8px;
-      padding: 16px 24px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .filter-btn {
-      padding: 8px 16px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-      color: #666;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.3s ease;
-      white-space: nowrap;
-    }
-
-    .filter-btn:hover {
-      border-color: rgba(255,255,255,0.15);
-      color: #aaa;
-    }
-
-    .filter-btn.active {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
-      border-color: rgba(139, 92, 246, 0.4);
+    .search-close:hover {
       color: #fff;
     }
 
     /* 影视网格 */
     .movies-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 20px;
-      padding: 20px 24px;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 16px;
+      padding: 20px;
       max-width: 1600px;
       margin: 0 auto;
     }
 
-    @media (min-width: 768px) {
+    @media (min-width: 640px) {
       .movies-grid {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 24px;
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 20px;
         padding: 24px;
       }
     }
@@ -204,20 +197,21 @@
     /* 影视卡片 */
     .movie-card {
       position: relative;
-      border-radius: 12px;
+      border-radius: 10px;
       overflow: hidden;
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.05);
-      transition: all 0.4s ease;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
     }
 
     .movie-card:hover {
       transform: translateY(-4px);
-      border-color: rgba(139, 92, 246, 0.3);
-      box-shadow: 
-        0 12px 40px rgba(0,0,0,0.4),
-        0 0 40px rgba(139, 92, 246, 0.1);
+      border-color: rgba(139, 92, 246, 0.35);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 30px rgba(139, 92, 246, 0.1);
     }
 
     .movie-poster {
@@ -230,13 +224,13 @@
     .movie-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
       opacity: 0;
       transition: opacity 0.3s ease;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding: 12px;
+      padding: 10px;
     }
 
     .movie-card:hover .movie-overlay {
@@ -244,9 +238,9 @@
     }
 
     .movie-title {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       font-weight: 500;
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -255,21 +249,15 @@
     }
 
     .movie-meta {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: #888;
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
     }
 
     .movie-year {
       color: #a78bfa;
-    }
-
-    .movie-rating {
-      display: flex;
-      align-items: center;
-      gap: 2px;
     }
 
     .movie-rating .star {
@@ -283,135 +271,150 @@
       right: 8px;
       display: flex;
       gap: 4px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
     }
 
     .tag {
-      padding: 3px 8px;
-      border-radius: 10px;
-      font-size: 0.6rem;
+      padding: 2px 7px;
+      border-radius: 8px;
+      font-size: 0.58rem;
       font-weight: 500;
-      letter-spacing: 0.03em;
     }
 
-    .tag-movie {
-      background: rgba(59, 130, 246, 0.8);
+    .tag-movie { background: rgba(59, 130, 246, 0.85); }
+    .tag-tv { background: rgba(168, 85, 247, 0.85); }
+    .tag-resource { background: rgba(16, 185, 129, 0.85); }
+
+    /* 统计 */
+    .stats {
+      text-align: center;
+      padding: 12px;
+      color: #444;
+      font-size: 0.72rem;
     }
 
-    .tag-tv {
-      background: rgba(168, 85, 247, 0.8);
+    /* 空状态 */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: #333;
     }
 
-    .tag-resource {
-      background: rgba(16, 185, 129, 0.85);
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 14px;
+      opacity: 0.3;
     }
 
-    /* 资源链接指示器 */
-    .resource-indicator {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: rgba(16, 185, 129, 0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.6rem;
+    .empty-state h2 {
+      font-size: 0.95rem;
+      font-weight: 400;
+      margin-bottom: 6px;
+      color: #444;
     }
 
-    /* 弹窗 */
-    .modal {
+    /* ========== 详情页 ========== */
+    .detail-page {
       display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(20px);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      min-height: 100vh;
     }
 
-    .modal.active {
-      display: flex;
+    .detail-page.active {
+      display: block;
     }
 
-    .modal-content {
-      background: linear-gradient(145deg, #12121a, #0a0a0f);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      max-width: 800px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
+    .detail-header {
       position: relative;
+      padding: 60px 24px 30px;
+      text-align: center;
     }
 
-    .modal-close {
+    .detail-back {
       position: absolute;
+      left: 20px;
       top: 16px;
-      right: 16px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.05);
-      border: none;
-      color: #888;
-      font-size: 1rem;
-      cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-      z-index: 10;
+      gap: 6px;
+      color: #888;
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.25s ease;
     }
 
-    .modal-close:hover {
-      background: rgba(255,255,255,0.1);
+    .detail-back:hover {
+      background: rgba(255,255,255,0.08);
       color: #fff;
     }
 
-    .modal-body {
+    .detail-share {
+      position: absolute;
+      right: 20px;
+      top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #888;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .detail-share:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+    }
+
+    .detail-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 60px;
+    }
+
+    .detail-main {
       display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 24px;
+      grid-template-columns: 200px 1fr;
+      gap: 28px;
+      margin-bottom: 28px;
     }
 
     @media (max-width: 600px) {
-      .modal-body {
+      .detail-main {
         grid-template-columns: 1fr;
+        text-align: center;
       }
     }
 
-    .modal-poster {
+    .detail-poster {
       width: 100%;
       border-radius: 12px;
       aspect-ratio: 2/3;
       object-fit: cover;
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     }
 
-    .modal-info {
-      padding: 16px 16px 16px 0;
+    .detail-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
-    @media (max-width: 600px) {
-      .modal-info {
-        padding: 0 16px 16px;
-      }
-    }
-
-    .modal-title {
-      font-size: 1.4rem;
+    .detail-title {
+      font-size: 1.6rem;
       font-weight: 600;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       line-height: 1.3;
     }
 
-    .modal-meta {
+    .detail-meta {
       display: flex;
       gap: 16px;
       color: #888;
@@ -420,32 +423,90 @@
       flex-wrap: wrap;
     }
 
-    .modal-meta span {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .modal-rating {
+    .detail-rating {
       color: #fbbf24;
+      font-weight: 500;
     }
 
-    .modal-section {
+    .detail-genre {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
       margin-bottom: 16px;
     }
 
-    .modal-section h3 {
+    .detail-genre-tag {
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      font-size: 0.75rem;
+      color: #888;
+    }
+
+    .detail-intro {
+      color: #888;
+      line-height: 1.7;
+      font-size: 0.9rem;
+    }
+
+    .detail-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    .detail-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .detail-link-douban {
+      background: rgba(0, 180, 60, 0.1);
+      border: 1px solid rgba(0, 180, 60, 0.25);
+      color: #00b43c;
+    }
+
+    .detail-link-douban:hover {
+      background: rgba(0, 180, 60, 0.2);
+    }
+
+    .detail-link-tmdb {
+      background: rgba(135, 163, 232, 0.1);
+      border: 1px solid rgba(135, 163, 232, 0.25);
+      color: #87a3e8;
+    }
+
+    .detail-link-tmdb:hover {
+      background: rgba(135, 163, 232, 0.2);
+    }
+
+    .detail-link-imdb {
+      background: rgba(244, 203, 87, 0.1);
+      border: 1px solid rgba(244, 203, 87, 0.25);
+      color: #f4cb57;
+    }
+
+    .detail-link-imdb:hover {
+      background: rgba(244, 203, 87, 0.2);
+    }
+
+    .detail-section {
+      margin-bottom: 24px;
+    }
+
+    .detail-section-title {
       font-size: 0.7rem;
       color: #555;
       letter-spacing: 0.1em;
-      margin-bottom: 8px;
       text-transform: uppercase;
-    }
-
-    .modal-intro {
-      color: #888;
-      line-height: 1.6;
-      font-size: 0.85rem;
+      margin-bottom: 12px;
     }
 
     .resource-links {
@@ -464,13 +525,13 @@
       border-radius: 10px;
       color: #10b981;
       text-decoration: none;
-      font-size: 0.8rem;
-      transition: all 0.3s ease;
+      font-size: 0.82rem;
+      transition: all 0.25s ease;
     }
 
     .resource-link:hover {
       background: rgba(16, 185, 129, 0.15);
-      border-color: rgba(16, 185, 129, 0.4);
+      border-color: rgba(16, 185, 129, 0.35);
     }
 
     .no-resource {
@@ -483,124 +544,108 @@
       text-align: center;
     }
 
-    /* 统计 */
-    .stats {
-      text-align: center;
-      padding: 16px;
-      color: #444;
-      font-size: 0.75rem;
-    }
-
-    /* 空状态 */
-    .empty-state {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 20px;
-      color: #333;
-    }
-
-    .empty-state-icon {
-      font-size: 3rem;
-      margin-bottom: 16px;
-      opacity: 0.3;
-    }
-
-    .empty-state h2 {
-      font-size: 1rem;
-      font-weight: 400;
-      margin-bottom: 8px;
-      color: #444;
-    }
-
-    .empty-state p {
-      font-size: 0.8rem;
-    }
-
     /* 滚动条 */
-    ::-webkit-scrollbar {
-      width: 6px;
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(20, 20, 30, 0.95);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 2000;
     }
 
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.1);
-      border-radius: 3px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(255,255,255,0.2);
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <div class="logo">
-      <span class="logo-icon">🎬</span>
-      <div>
-        <div class="logo-text">影视库</div>
-        <div class="logo-sub">MOVIE & TV</div>
+  <!-- 首页 -->
+  <div class="home-page" id="homePage">
+    <div class="topbar">
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">全部</button>
+        <button class="filter-btn" data-filter="movie">电影</button>
+        <button class="filter-btn" data-filter="tv">剧集</button>
+        <button class="filter-btn" data-filter="has-resource">可播放</button>
       </div>
-    </div>
-    <div class="search-wrapper">
-      <div class="search-icon" onclick="expandSearch()">🔍</div>
-      <div class="search-expanded" id="searchExpanded">
-        <div class="search-box">
-          <span>🔍</span>
-          <input type="text" id="searchInput" placeholder="搜索影视名称..." oninput="renderMovies()">
-          <span class="search-close" onclick="collapseSearch()">✕</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="filters">
-    <button class="filter-btn active" data-filter="all">全部</button>
-    <button class="filter-btn" data-filter="movie">电影</button>
-    <button class="filter-btn" data-filter="tv">剧集</button>
-    <button class="filter-btn" data-filter="has-resource">可播放</button>
-  </div>
-
-  <div class="movies-grid" id="moviesGrid"></div>
-  <div class="stats" id="stats"></div>
-
-  <!-- 详情弹窗 -->
-  <div class="modal" id="modal">
-    <div class="modal-content">
-      <button class="modal-close" onclick="closeModal()">✕</button>
-      <div class="modal-body">
-        <img class="modal-poster" id="modalPoster" src="" alt="">
-        <div class="modal-info">
-          <h2 class="modal-title" id="modalTitle"></h2>
-          <div class="modal-meta">
-            <span id="modalYear"></span>
-            <span id="modalGenre"></span>
-            <span class="modal-rating" id="modalRating"></span>
-            <span id="modalType"></span>
-          </div>
-          <div class="modal-section">
-            <h3>简介</h3>
-            <p class="modal-intro" id="modalIntro"></p>
-          </div>
-          <div class="modal-section">
-            <h3>资源链接</h3>
-            <div class="resource-links" id="modalResources"></div>
-          </div>
-          <div class="modal-section">
-            <h3>豆瓣</h3>
-            <a id="modalDouban" href="" target="_blank" style="color:#a78bfa;font-size:0.8rem;"></a>
+      <a href="#" class="logo" onclick="goHome(); return false;">
+        <span class="logo-icon">🎬</span>
+        <span class="logo-text">影视库</span>
+      </a>
+      <div class="search-wrapper">
+        <div class="search-icon" onclick="expandSearch()">🔍</div>
+        <div class="search-expanded" id="searchExpanded">
+          <div class="search-box">
+            <span>🔍</span>
+            <input type="text" id="searchInput" placeholder="搜索..." oninput="renderMovies()">
+            <span class="search-close" onclick="collapseSearch()">✕</span>
           </div>
         </div>
       </div>
     </div>
+
+    <div class="movies-grid" id="moviesGrid"></div>
+    <div class="stats" id="stats"></div>
   </div>
+
+  <!-- 详情页 -->
+  <div class="detail-page" id="detailPage">
+    <div class="detail-header">
+      <a href="#" class="detail-back" onclick="goHome(); return false;">← 返回</a>
+      <button class="detail-share" onclick="shareMovie()">分享 ↗</button>
+    </div>
+    <div class="detail-content">
+      <div class="detail-main">
+        <img class="detail-poster" id="detailPoster" src="" alt="">
+        <div class="detail-info">
+          <h1 class="detail-title" id="detailTitle"></h1>
+          <div class="detail-meta">
+            <span id="detailYear"></span>
+            <span class="detail-rating" id="detailRating"></span>
+            <span id="detailGenre"></span>
+          </div>
+          <div class="detail-genre" id="detailGenreTags"></div>
+          <p class="detail-intro" id="detailIntro"></p>
+        </div>
+      </div>
+      <div class="detail-links" id="detailLinks"></div>
+      <div class="detail-section">
+        <div class="detail-section-title">资源链接</div>
+        <div class="resource-links" id="detailResources"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
 
   <script>
     const API_BASE = 'https://media-library-api.jemchmi.workers.dev';
     let movies = [];
     let currentFilter = 'all';
+    let currentMovie = null;
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
 
     function expandSearch() {
       document.getElementById('searchExpanded').classList.add('active');
@@ -613,6 +658,13 @@
       document.querySelector('.search-icon').style.display = 'flex';
       document.getElementById('searchInput').value = '';
       renderMovies();
+    }
+
+    function goHome() {
+      document.getElementById('homePage').style.display = 'block';
+      document.getElementById('detailPage').classList.remove('active');
+      window.scrollTo(0, 0);
+      history.pushState(null, '', location.pathname);
     }
 
     async function loadMovies() {
@@ -634,7 +686,7 @@
         if (currentFilter === 'movie' && m.type !== 'movie') return false;
         if (currentFilter === 'tv' && m.type !== 'tv') return false;
         if (currentFilter === 'has-resource' && (!m.resources || m.resources.length === 0)) return false;
-        if (search && !m.title.toLowerCase().includes(search) && !(m.titleCn || '').toLowerCase().includes(search)) return false;
+        if (search && !(m.titleCn || '').toLowerCase().includes(search) && !m.title.toLowerCase().includes(search)) return false;
         return true;
       });
 
@@ -651,8 +703,8 @@
       }
 
       grid.innerHTML = filtered.map(m => `
-        <div class="movie-card" onclick="openModal('${m.id}')">
-          ${m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.titleCn || m.title}" onerror="this.style.display='none'">` : ''}
+        <a class="movie-card" href="/movie/${m.id}" onclick="openMovie('${m.id}'); return false;">
+          ${m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.titleCn || m.title}">` : '<div style="aspect-ratio:2/3;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center;font-size:2rem;color:rgba(255,255,255,0.08);">🎬</div>'}
           <div class="movie-tags">
             <span class="tag ${m.type === 'movie' ? 'tag-movie' : 'tag-tv'}">${m.type === 'movie' ? '电影' : '剧集'}</span>
             ${m.resources && m.resources.length > 0 ? '<span class="tag tag-resource">▶</span>' : ''}
@@ -664,36 +716,72 @@
               ${m.rating ? `<span class="movie-rating"><span class="star">★</span>${m.rating}</span>` : ''}
             </div>
           </div>
-        </div>
+        </a>
       `).join('');
 
       document.getElementById('stats').textContent = `共 ${filtered.length} 部`;
     }
 
-    async function openModal(id) {
+    async function openMovie(id) {
       try {
         const resp = await fetch(`${API_BASE}/api/movies/${id}`);
         const data = await resp.json();
         const m = data.movie;
         if (!m) return;
 
+        currentMovie = m;
+
+        // 构建详情页URL
+        const url = `/movie/${id}`;
+        history.pushState({ id }, '', url);
+
+        // 填充数据
         if (m.poster) {
-          document.getElementById('modalPoster').src = m.poster;
-          document.getElementById('modalPoster').style.display = 'block';
+          document.getElementById('detailPoster').src = m.poster;
+          document.getElementById('detailPoster').style.display = 'block';
         } else {
-          document.getElementById('modalPoster').style.display = 'none';
+          document.getElementById('detailPoster').style.display = 'none';
         }
 
-        document.getElementById('modalTitle').textContent = m.titleCn || m.title;
-        document.getElementById('modalYear').textContent = m.year || '';
-        document.getElementById('modalGenre').textContent = m.genre || '';
-        document.getElementById('modalRating').innerHTML = m.rating ? `<span class="star">★</span> ${m.rating}` : '';
-        document.getElementById('modalType').textContent = m.type === 'movie' ? '电影' : '剧集';
-        document.getElementById('modalIntro').textContent = m.intro || '暂无简介';
-        document.getElementById('modalDouban').href = m.doubanUrl;
-        document.getElementById('modalDouban').textContent = m.doubanUrl;
+        document.getElementById('detailTitle').textContent = m.titleCn || m.title;
+        document.getElementById('detailYear').textContent = m.year || '';
+        document.getElementById('detailRating').innerHTML = m.rating ? `<span class="star">★</span> ${m.rating}` : '';
+        document.getElementById('detailGenre').textContent = m.genre || '';
 
-        const resourcesEl = document.getElementById('modalResources');
+        // 类型标签
+        const genreTags = document.getElementById('detailGenreTags');
+        if (m.genre) {
+          genreTags.innerHTML = m.genre.split(' / ').map(g => `<span class="detail-genre-tag">${g}</span>`).join('');
+        } else {
+          genreTags.innerHTML = '';
+        }
+
+        document.getElementById('detailIntro').textContent = m.intro || '暂无简介';
+
+        // 外部链接
+        const linksEl = document.getElementById('detailLinks');
+        let linksHtml = '';
+
+        if (m.doubanUrl) {
+          linksHtml += `<a href="${m.doubanUrl}" target="_blank" class="detail-link detail-link-douban">🍅 豆瓣</a>`;
+        }
+
+        // TMDB / IMDb 链接（如果有）
+        const tmdbUrl = `https://www.themoviedb.org/movie/${m.tmdbId || ''}`;
+        const imdbUrl = `https://www.imdb.com/title/${m.imdbId || ''}`;
+
+        if (m.tmdbId) {
+          linksHtml += `<a href="${tmdbUrl}" target="_blank" class="detail-link detail-link-tmdb">🎬 TMDB</a>`;
+        }
+
+        if (m.imdbId) {
+          linksHtml += `<a href="${imdbUrl}" target="_blank" class="detail-link detail-link-imdb">🎞️ IMDb</a>`;
+        }
+
+        linksEl.innerHTML = linksHtml;
+
+        // 资源链接
+        const resourcesEl = document.getElementById('detailResources');
         if (m.resources && m.resources.length > 0) {
           resourcesEl.innerHTML = m.resources.map(r => `
             <a href="${r.url}" target="_blank" class="resource-link">
@@ -705,24 +793,49 @@
           resourcesEl.innerHTML = '<div class="no-resource">暂无资源链接</div>';
         }
 
-        document.getElementById('modal').classList.add('active');
+        // 切换页面
+        document.getElementById('homePage').style.display = 'none';
+        document.getElementById('detailPage').classList.add('active');
+        window.scrollTo(0, 0);
+
       } catch (e) {
         console.error('加载详情失败:', e);
       }
     }
 
-    function closeModal() {
-      document.getElementById('modal').classList.remove('active');
+    function shareMovie() {
+      if (!currentMovie) return;
+      const title = currentMovie.titleCn || currentMovie.title;
+      const url = location.href;
+      const shareData = { title, text: `${title} - 影视库`, url };
+      if (navigator.share) {
+        navigator.share(shareData).catch(() => {});
+      } else {
+        navigator.clipboard.writeText(url).then(() => showToast('链接已复制'));
+      }
     }
 
-    document.getElementById('modal').addEventListener('click', (e) => {
-      if (e.target.id === 'modal') closeModal();
+    // 监听浏览器前进后退
+    window.addEventListener('popstate', (e) => {
+      if (e.state && e.state.id) {
+        openMovie(e.state.id);
+      } else {
+        goHome();
+      }
     });
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModal();
-    });
+    // 处理路由
+    function handleRoute() {
+      const path = location.pathname;
+      const match = path.match(/^\/movie\/(\d+)$/);
+      if (match) {
+        openMovie(match[1]);
+      } else {
+        goHome();
+      }
+    }
 
+    // 筛选
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -732,7 +845,14 @@
       });
     });
 
+    // ESC 关闭搜索
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') collapseSearch();
+    });
+
+    // 初始化
     loadMovies();
+    handleRoute();
   </script>
 </body>
 </html>
