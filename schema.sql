@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS movies (
     cast TEXT,
     intro TEXT,
     poster TEXT,
+    tmdb_id TEXT,
+    imdb_id TEXT,
     added_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
 );
