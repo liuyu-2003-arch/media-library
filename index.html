@@ -6,6 +6,37 @@
   <title>影视库</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
   <style>
+    :root {
+      --bg-primary: #f5f5f7;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --text-primary: #1d1d1f;
+      --text-secondary: #86868b;
+      --text-tertiary: #acacb0;
+      --border-color: rgba(0,0,0,0.08);
+      --accent: #667eea;
+      --accent-hover: #5a6fd6;
+      --tag-movie: #007aff;
+      --tag-tv: #af52de;
+      --tag-resource: #34c759;
+      --shadow: 0 4px 20px rgba(0,0,0,0.08);
+      --shadow-hover: 0 8px 30px rgba(0,0,0,0.12);
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a24;
+      --text-primary: #e0e0e0;
+      --text-secondary: #888888;
+      --text-tertiary: #555555;
+      --border-color: rgba(255,255,255,0.08);
+      --accent: #667eea;
+      --accent-hover: #7c8ff5;
+      --shadow: 0 4px 20px rgba(0,0,0,0.3);
+      --shadow-hover: 0 8px 30px rgba(0,0,0,0.4);
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -14,9 +45,10 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
-      background: #0a0a0f;
-      color: #e0e0e0;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       min-height: 100vh;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
     body::before {
@@ -26,10 +58,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: 
-        radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
+      background: var(--bg-primary);
       pointer-events: none;
       z-index: -1;
     }
@@ -43,40 +72,17 @@
       align-items: center;
       justify-content: space-between;
       padding: 14px 20px;
-      background: rgba(10, 10, 15, 0.85);
+      background: var(--bg-secondary);
       backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      gap: 12px;
+      border-bottom: 1px solid var(--border-color);
+      gap: 16px;
+      transition: background 0.3s ease;
     }
 
-    .filters {
+    .topbar-left {
       display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-      order: 1;
-    }
-
-    .filter-btn {
-      padding: 7px 14px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-      color: #666;
-      border-radius: 18px;
-      cursor: pointer;
-      font-size: 0.78rem;
-      transition: all 0.25s ease;
-      white-space: nowrap;
-    }
-
-    .filter-btn:hover {
-      border-color: rgba(255,255,255,0.15);
-      color: #aaa;
-    }
-
-    .filter-btn.active {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
-      border-color: rgba(139, 92, 246, 0.45);
-      color: #fff;
+      align-items: center;
+      gap: 8px;
     }
 
     .logo {
@@ -84,8 +90,7 @@
       align-items: center;
       gap: 10px;
       text-decoration: none;
-      flex-shrink: 0;
-      order: 3;
+      color: var(--text-primary);
     }
 
     .logo-icon {
@@ -94,18 +99,53 @@
 
     .logo-text {
       font-size: 1rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #60a5fa 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 6px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .filters.search-active {
+      opacity: 0;
+      transform: translateX(20px);
+      pointer-events: none;
+    }
+
+    .filter-btn {
+      padding: 7px 14px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      border-radius: 18px;
+      cursor: pointer;
+      font-size: 0.78rem;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
     }
 
     .search-wrapper {
       position: relative;
-      flex-shrink: 0;
-      order: 2;
     }
 
     .search-icon {
@@ -114,8 +154,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 10px;
       cursor: pointer;
       font-size: 0.9rem;
@@ -123,8 +163,7 @@
     }
 
     .search-icon:hover {
-      background: rgba(255,255,255,0.08);
-      border-color: rgba(255,255,255,0.15);
+      border-color: var(--accent);
     }
 
     .search-expanded {
@@ -147,12 +186,12 @@
     .search-box {
       display: flex;
       align-items: center;
-      background: rgba(20, 20, 30, 0.95);
-      border: 1px solid rgba(139, 92, 246, 0.5);
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
       border-radius: 12px;
       padding: 8px 12px;
       gap: 8px;
-      box-shadow: 0 4px 30px rgba(0,0,0,0.5), 0 0 20px rgba(139, 92, 246, 0.15);
+      box-shadow: var(--shadow);
     }
 
     .search-box input {
@@ -160,23 +199,42 @@
       background: none;
       border: none;
       outline: none;
-      color: #e0e0e0;
+      color: var(--text-primary);
       font-size: 0.85rem;
     }
 
     .search-box input::placeholder {
-      color: #555;
+      color: var(--text-tertiary);
     }
 
     .search-close {
       cursor: pointer;
-      color: #666;
+      color: var(--text-tertiary);
       font-size: 0.75rem;
       transition: color 0.2s;
     }
 
     .search-close:hover {
-      color: #fff;
+      color: var(--text-primary);
+    }
+
+    /* 主题切换 */
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.25s ease;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent);
     }
 
     /* 影视网格 */
@@ -185,7 +243,7 @@
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 16px;
       padding: 20px;
-      padding-bottom: 60px;
+      padding-bottom: 70px;
       max-width: 1600px;
       margin: 0 auto;
     }
@@ -195,6 +253,7 @@
         grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
         gap: 20px;
         padding: 24px;
+        padding-bottom: 70px;
       }
     }
 
@@ -203,19 +262,19 @@
       position: relative;
       border-radius: 10px;
       overflow: hidden;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.05);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
       text-decoration: none;
       color: inherit;
       display: block;
+      box-shadow: var(--shadow);
     }
 
     .movie-card:hover {
       transform: translateY(-4px);
-      border-color: rgba(139, 92, 246, 0.35);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 30px rgba(139, 92, 246, 0.1);
+      box-shadow: var(--shadow-hover);
     }
 
     .movie-poster {
@@ -225,22 +284,10 @@
       display: block;
     }
 
-    .movie-card-title {
-      padding: 8px 6px 6px;
-      font-size: 0.72rem;
-      color: #aaa;
-      text-align: center;
-      line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
     .movie-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
+      background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 50%, transparent 100%);
       opacity: 0;
       transition: opacity 0.3s ease;
       display: flex;
@@ -253,7 +300,7 @@
       opacity: 1;
     }
 
-    .movie-title {
+    .movie-title-overlay {
       font-size: 0.8rem;
       font-weight: 500;
       margin-bottom: 3px;
@@ -262,11 +309,12 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
       line-height: 1.3;
+      color: #fff;
     }
 
-    .movie-meta {
+    .movie-meta-overlay {
       font-size: 0.65rem;
-      color: #888;
+      color: rgba(255,255,255,0.8);
       display: flex;
       gap: 6px;
       align-items: center;
@@ -294,11 +342,25 @@
       border-radius: 8px;
       font-size: 0.58rem;
       font-weight: 500;
+      color: #fff;
     }
 
-    .tag-movie { background: rgba(59, 130, 246, 0.85); }
-    .tag-tv { background: rgba(168, 85, 247, 0.85); }
-    .tag-resource { background: rgba(16, 185, 129, 0.85); }
+    .tag-movie { background: var(--tag-movie); }
+    .tag-tv { background: var(--tag-tv); }
+    .tag-resource { background: var(--tag-resource); }
+
+    /* 电影标题 */
+    .movie-card-title {
+      padding: 10px 6px 8px;
+      font-size: 0.75rem;
+      color: var(--text-primary);
+      text-align: center;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
 
     /* 统计 */
     .stats {
@@ -308,11 +370,11 @@
       right: 0;
       text-align: center;
       padding: 12px;
-      color: #444;
+      color: var(--text-tertiary);
       font-size: 0.72rem;
-      background: rgba(10, 10, 15, 0.9);
+      background: var(--bg-secondary);
       backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255,255,255,0.05);
+      border-top: 1px solid var(--border-color);
       z-index: 50;
     }
 
@@ -321,7 +383,6 @@
       grid-column: 1 / -1;
       text-align: center;
       padding: 60px 20px;
-      color: #333;
     }
 
     .empty-state-icon {
@@ -334,7 +395,7 @@
       font-size: 0.95rem;
       font-weight: 400;
       margin-bottom: 6px;
-      color: #444;
+      color: var(--text-secondary);
     }
 
     /* ========== 详情页 ========== */
@@ -349,7 +410,7 @@
 
     .detail-header {
       position: relative;
-      padding: 60px 24px 30px;
+      padding: 60px 24px 24px;
       text-align: center;
     }
 
@@ -360,19 +421,19 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      color: #888;
+      color: var(--text-secondary);
       text-decoration: none;
       font-size: 0.85rem;
       padding: 8px 14px;
       border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       transition: all 0.25s ease;
     }
 
     .detail-back:hover {
-      background: rgba(255,255,255,0.08);
-      color: #fff;
+      border-color: var(--accent);
+      color: var(--text-primary);
     }
 
     .detail-share {
@@ -382,19 +443,19 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      color: #888;
+      color: var(--text-secondary);
       font-size: 0.85rem;
       padding: 8px 14px;
       border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       cursor: pointer;
       transition: all 0.25s ease;
     }
 
     .detail-share:hover {
-      background: rgba(255,255,255,0.08);
-      color: #fff;
+      border-color: var(--accent);
+      color: var(--text-primary);
     }
 
     .detail-content {
@@ -422,7 +483,7 @@
       border-radius: 12px;
       aspect-ratio: 2/3;
       object-fit: cover;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      box-shadow: var(--shadow);
     }
 
     .detail-info {
@@ -441,14 +502,14 @@
     .detail-meta {
       display: flex;
       gap: 16px;
-      color: #888;
+      color: var(--text-secondary);
       font-size: 0.85rem;
       margin-bottom: 16px;
       flex-wrap: wrap;
     }
 
     .detail-rating {
-      color: #fbbf24;
+      color: #f4a523;
       font-weight: 500;
     }
 
@@ -461,14 +522,15 @@
 
     .detail-genre-tag {
       padding: 4px 12px;
-      background: rgba(255,255,255,0.05);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
       border-radius: 12px;
       font-size: 0.75rem;
-      color: #888;
+      color: var(--text-secondary);
     }
 
     .detail-intro {
-      color: #888;
+      color: var(--text-secondary);
       line-height: 1.7;
       font-size: 0.9rem;
     }
@@ -514,7 +576,7 @@
     .detail-link-imdb {
       background: rgba(244, 203, 87, 0.1);
       border: 1px solid rgba(244, 203, 87, 0.25);
-      color: #f4cb57;
+      color: #d4a835;
     }
 
     .detail-link-imdb:hover {
@@ -527,7 +589,7 @@
 
     .detail-section-title {
       font-size: 0.7rem;
-      color: #555;
+      color: var(--text-tertiary);
       letter-spacing: 0.1em;
       text-transform: uppercase;
       margin-bottom: 12px;
@@ -560,10 +622,10 @@
 
     .no-resource {
       padding: 16px;
-      background: rgba(255,255,255,0.02);
-      border: 1px dashed rgba(255,255,255,0.1);
+      background: var(--bg-card);
+      border: 1px dashed var(--border-color);
       border-radius: 10px;
-      color: #555;
+      color: var(--text-tertiary);
       font-size: 0.8rem;
       text-align: center;
     }
@@ -571,25 +633,26 @@
     /* 滚动条 */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+    ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
     /* Toast */
     .toast {
       position: fixed;
-      bottom: 24px;
+      bottom: 70px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: rgba(20, 20, 30, 0.95);
-      border: 1px solid rgba(139, 92, 246, 0.4);
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
       padding: 12px 20px;
       border-radius: 10px;
       font-size: 0.85rem;
-      color: #fff;
+      color: var(--text-primary);
       opacity: 0;
       pointer-events: none;
       transition: all 0.3s ease;
       z-index: 2000;
+      box-shadow: var(--shadow);
     }
 
     .toast.show {
@@ -602,26 +665,31 @@
   <!-- 首页 -->
   <div class="home-page" id="homePage">
     <div class="topbar">
-      <div class="filters">
-        <button class="filter-btn active" data-filter="all">全部</button>
-        <button class="filter-btn" data-filter="movie">电影</button>
-        <button class="filter-btn" data-filter="tv">剧集</button>
-        <button class="filter-btn" data-filter="has-resource">可播放</button>
+      <div class="topbar-left">
+        <a href="/" class="logo" onclick="goHome(); return false;">
+          <span class="logo-icon">🎬</span>
+          <span class="logo-text">影视库</span>
+        </a>
       </div>
-      <div class="search-wrapper">
-        <div class="search-icon" onclick="expandSearch()">🔍</div>
-        <div class="search-expanded" id="searchExpanded">
-          <div class="search-box">
-            <span>🔍</span>
-            <input type="text" id="searchInput" placeholder="搜索..." oninput="renderMovies()">
-            <span class="search-close" onclick="collapseSearch()">✕</span>
+      <div class="topbar-right">
+        <div class="filters" id="filters">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="movie">电影</button>
+          <button class="filter-btn" data-filter="tv">剧集</button>
+          <button class="filter-btn" data-filter="has-resource">可播放</button>
+        </div>
+        <div class="search-wrapper">
+          <div class="search-icon" onclick="expandSearch()">🔍</div>
+          <div class="search-expanded" id="searchExpanded">
+            <div class="search-box">
+              <span>🔍</span>
+              <input type="text" id="searchInput" placeholder="搜索..." oninput="renderMovies()">
+              <span class="search-close" onclick="collapseSearch()">✕</span>
+            </div>
           </div>
         </div>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
       </div>
-      <a href="#" class="logo" onclick="goHome(); return false;">
-        <span class="logo-icon">🎬</span>
-        <span class="logo-text">影视库</span>
-      </a>
     </div>
 
     <div class="movies-grid" id="moviesGrid"></div>
@@ -631,7 +699,7 @@
   <!-- 详情页 -->
   <div class="detail-page" id="detailPage">
     <div class="detail-header">
-      <a href="#" class="detail-back" onclick="goHome(); return false;">← 返回</a>
+      <a href="/" class="detail-back" onclick="goHome(); return false;">← 返回</a>
       <button class="detail-share" onclick="shareMovie()">分享 ↗</button>
     </div>
     <div class="detail-content">
@@ -664,6 +732,22 @@
     let currentFilter = 'all';
     let currentMovie = null;
 
+    // 主题
+    function getTheme() {
+      return localStorage.getItem('theme') || 'light';
+    }
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+
+    function toggleTheme() {
+      const current = getTheme();
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    }
+
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -674,12 +758,13 @@
     function expandSearch() {
       document.getElementById('searchExpanded').classList.add('active');
       document.querySelector('.search-icon').style.display = 'none';
-      document.getElementById('searchInput').focus();
+      document.getElementById('filters').classList.add('search-active');
     }
 
     function collapseSearch() {
       document.getElementById('searchExpanded').classList.remove('active');
       document.querySelector('.search-icon').style.display = 'flex';
+      document.getElementById('filters').classList.remove('search-active');
       document.getElementById('searchInput').value = '';
       renderMovies();
     }
@@ -688,7 +773,7 @@
       document.getElementById('homePage').style.display = 'block';
       document.getElementById('detailPage').classList.remove('active');
       window.scrollTo(0, 0);
-      history.pushState(null, '', location.pathname);
+      history.pushState(null, '', '/');
     }
 
     async function loadMovies() {
@@ -735,8 +820,8 @@
           </div>
           <div class="movie-card-title">${m.titleCn || m.title}</div>
           <div class="movie-overlay">
-            <h3 class="movie-title">${m.titleCn || m.title}</h3>
-            <div class="movie-meta">
+            <h3 class="movie-title-overlay">${m.titleCn || m.title}</h3>
+            <div class="movie-meta-overlay">
               <span class="movie-year">${m.year || ''}</span>
               ${m.rating ? `<span class="movie-rating"><span class="star">★</span>${m.rating}</span>` : ''}
             </div>
@@ -756,11 +841,8 @@
 
         currentMovie = m;
 
-        // 构建详情页URL
-        const url = `/movie/${id}`;
-        history.pushState({ id }, '', url);
+        history.pushState({ id }, '', `/movie/${id}`);
 
-        // 填充数据
         if (m.poster) {
           document.getElementById('detailPoster').src = m.poster;
           document.getElementById('detailPoster').style.display = 'block';
@@ -773,7 +855,6 @@
         document.getElementById('detailRating').innerHTML = m.rating ? `<span class="star">★</span> ${m.rating}` : '';
         document.getElementById('detailGenre').textContent = m.genre || '';
 
-        // 类型标签
         const genreTags = document.getElementById('detailGenreTags');
         if (m.genre) {
           genreTags.innerHTML = m.genre.split(' / ').map(g => `<span class="detail-genre-tag">${g}</span>`).join('');
@@ -783,7 +864,6 @@
 
         document.getElementById('detailIntro').textContent = m.intro || '暂无简介';
 
-        // 外部链接
         const linksEl = document.getElementById('detailLinks');
         let linksHtml = '';
 
@@ -791,21 +871,16 @@
           linksHtml += `<a href="${m.doubanUrl}" target="_blank" class="detail-link detail-link-douban">🍅 豆瓣</a>`;
         }
 
-        // TMDB / IMDb 链接（如果有）
-        const tmdbUrl = `https://www.themoviedb.org/movie/${m.tmdbId || ''}`;
-        const imdbUrl = `https://www.imdb.com/title/${m.imdbId || ''}`;
-
         if (m.tmdbId) {
-          linksHtml += `<a href="${tmdbUrl}" target="_blank" class="detail-link detail-link-tmdb">🎬 TMDB</a>`;
+          linksHtml += `<a href="https://www.themoviedb.org/movie/${m.tmdbId}" target="_blank" class="detail-link detail-link-tmdb">🎬 TMDB</a>`;
         }
 
         if (m.imdbId) {
-          linksHtml += `<a href="${imdbUrl}" target="_blank" class="detail-link detail-link-imdb">🎞️ IMDb</a>`;
+          linksHtml += `<a href="https://www.imdb.com/title/${m.imdbId}" target="_blank" class="detail-link detail-link-imdb">🎞️ IMDb</a>`;
         }
 
         linksEl.innerHTML = linksHtml;
 
-        // 资源链接
         const resourcesEl = document.getElementById('detailResources');
         if (m.resources && m.resources.length > 0) {
           resourcesEl.innerHTML = m.resources.map(r => `
@@ -818,7 +893,6 @@
           resourcesEl.innerHTML = '<div class="no-resource">暂无资源链接</div>';
         }
 
-        // 切换页面
         document.getElementById('homePage').style.display = 'none';
         document.getElementById('detailPage').classList.add('active');
         window.scrollTo(0, 0);
@@ -832,15 +906,13 @@
       if (!currentMovie) return;
       const title = currentMovie.titleCn || currentMovie.title;
       const url = location.href;
-      const shareData = { title, text: `${title} - 影视库`, url };
       if (navigator.share) {
-        navigator.share(shareData).catch(() => {});
+        navigator.share({ title, text: `${title} - 影视库`, url }).catch(() => {});
       } else {
         navigator.clipboard.writeText(url).then(() => showToast('链接已复制'));
       }
     }
 
-    // 监听浏览器前进后退
     window.addEventListener('popstate', (e) => {
       if (e.state && e.state.id) {
         openMovie(e.state.id);
@@ -849,7 +921,6 @@
       }
     });
 
-    // 处理路由
     function handleRoute() {
       const path = location.pathname;
       const match = path.match(/^\/movie\/(\d+)$/);
@@ -860,7 +931,6 @@
       }
     }
 
-    // 筛选
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -870,12 +940,12 @@
       });
     });
 
-    // ESC 关闭搜索
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') collapseSearch();
     });
 
     // 初始化
+    setTheme(getTheme());
     loadMovies();
     handleRoute();
   </script>
