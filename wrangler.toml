@@ -1,14 +1,2 @@
 name = "media-library"
-compatibility_date = "2024-01-01"
-account_id = "dd0afffd8fff1c8846db83bc10e2aa1f"
-
-# D1 Database
-[[d1_databases]]
-binding = "DB"
-database_name = "media-library"
-database_id = "b414bdb1-dbda-4489-9d72-c7c0c738bb3a"
-
-# KV Namespace for cache
-[[kv_namespaces]]
-binding = "CACHE"
-id = "YOUR_KV_ID"
+pages_build_output_dir = "."

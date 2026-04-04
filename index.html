@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>影视库</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
   <style>
     * {
       margin: 0;
@@ -34,94 +35,101 @@
       z-index: -1;
     }
 
-    /* 头部 */
-    header {
-      padding: 60px 40px 40px;
-      text-align: center;
-      position: relative;
+    /* 顶部导航栏 */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
     }
 
-    header::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    h1 {
-      font-size: 2.5rem;
-      font-weight: 300;
-      letter-spacing: 0.3em;
-      margin-bottom: 12px;
+    .logo-icon {
+      font-size: 1.5rem;
+    }
+
+    .logo-text {
+      font-size: 1.1rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
       background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #60a5fa 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
-    .subtitle {
-      font-size: 0.9rem;
-      color: #666;
-      letter-spacing: 0.2em;
+    .logo-sub {
+      font-size: 0.65rem;
+      color: #555;
+      letter-spacing: 0.15em;
+      display: none;
     }
 
-    /* 筛选栏 */
-    .filters {
+    @media (min-width: 768px) {
+      .logo-sub {
+        display: block;
+      }
+    }
+
+    /* 搜索 */
+    .search-wrapper {
+      position: relative;
+    }
+
+    .search-icon {
+      width: 40px;
+      height: 40px;
       display: flex;
+      align-items: center;
       justify-content: center;
-      gap: 16px;
-      padding: 30px 40px;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      padding: 10px 24px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.03);
-      color: #888;
-      border-radius: 24px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 1rem;
       transition: all 0.3s ease;
-      letter-spacing: 0.05em;
     }
 
-    .filter-btn:hover {
-      border-color: rgba(255,255,255,0.2);
-      color: #e0e0e0;
+    .search-icon:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.15);
     }
 
-    .filter-btn.active {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
-      border-color: rgba(139, 92, 246, 0.4);
-      color: #fff;
+    .search-expanded {
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 280px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
     }
 
-    /* 搜索框 */
-    .search-container {
-      max-width: 600px;
-      margin: 0 auto 40px;
-      padding: 0 40px;
+    .search-expanded.active {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .search-box {
       display: flex;
       align-items: center;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 16px;
-      padding: 16px 24px;
-      gap: 12px;
-      transition: all 0.3s ease;
-    }
-
-    .search-box:focus-within {
-      border-color: rgba(139, 92, 246, 0.4);
-      box-shadow: 0 0 40px rgba(139, 92, 246, 0.1);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      border-radius: 12px;
+      padding: 10px 14px;
+      gap: 10px;
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.15);
     }
 
     .search-box input {
@@ -130,27 +138,73 @@
       border: none;
       outline: none;
       color: #e0e0e0;
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
 
     .search-box input::placeholder {
       color: #555;
     }
 
+    .search-close {
+      cursor: pointer;
+      color: #666;
+      font-size: 0.8rem;
+    }
+
+    /* 筛选栏 */
+    .filters {
+      display: flex;
+      gap: 8px;
+      padding: 16px 24px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: #666;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .filter-btn:hover {
+      border-color: rgba(255,255,255,0.15);
+      color: #aaa;
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));
+      border-color: rgba(139, 92, 246, 0.4);
+      color: #fff;
+    }
+
     /* 影视网格 */
     .movies-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 32px;
-      padding: 40px;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 20px;
+      padding: 20px 24px;
       max-width: 1600px;
       margin: 0 auto;
+    }
+
+    @media (min-width: 768px) {
+      .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 24px;
+        padding: 24px;
+      }
     }
 
     /* 影视卡片 */
     .movie-card {
       position: relative;
-      border-radius: 16px;
+      border-radius: 12px;
       overflow: hidden;
       background: rgba(255,255,255,0.02);
       border: 1px solid rgba(255,255,255,0.05);
@@ -159,11 +213,11 @@
     }
 
     .movie-card:hover {
-      transform: translateY(-8px);
+      transform: translateY(-4px);
       border-color: rgba(139, 92, 246, 0.3);
       box-shadow: 
-        0 20px 60px rgba(0,0,0,0.4),
-        0 0 60px rgba(139, 92, 246, 0.1);
+        0 12px 40px rgba(0,0,0,0.4),
+        0 0 40px rgba(139, 92, 246, 0.1);
     }
 
     .movie-poster {
@@ -182,7 +236,7 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding: 20px;
+      padding: 12px;
     }
 
     .movie-card:hover .movie-overlay {
@@ -190,20 +244,21 @@
     }
 
     .movie-title {
-      font-size: 1rem;
+      font-size: 0.85rem;
       font-weight: 500;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      line-height: 1.3;
     }
 
     .movie-meta {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #888;
       display: flex;
-      gap: 12px;
+      gap: 8px;
       align-items: center;
     }
 
@@ -214,7 +269,7 @@
     .movie-rating {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 2px;
     }
 
     .movie-rating .star {
@@ -224,19 +279,20 @@
     /* 标签 */
     .movie-tags {
       position: absolute;
-      top: 12px;
-      left: 12px;
+      top: 8px;
+      right: 8px;
       display: flex;
-      gap: 6px;
+      gap: 4px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .tag {
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 0.65rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 0.6rem;
       font-weight: 500;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.03em;
     }
 
     .tag-movie {
@@ -248,22 +304,22 @@
     }
 
     .tag-resource {
-      background: rgba(16, 185, 129, 0.8);
+      background: rgba(16, 185, 129, 0.85);
     }
 
     /* 资源链接指示器 */
     .resource-indicator {
       position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 28px;
-      height: 28px;
+      bottom: 8px;
+      right: 8px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       background: rgba(16, 185, 129, 0.9);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.7rem;
+      font-size: 0.6rem;
     }
 
     /* 弹窗 */
@@ -276,7 +332,7 @@
       z-index: 1000;
       align-items: center;
       justify-content: center;
-      padding: 40px;
+      padding: 20px;
     }
 
     .modal.active {
@@ -286,8 +342,8 @@
     .modal-content {
       background: linear-gradient(145deg, #12121a, #0a0a0f);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      max-width: 900px;
+      border-radius: 20px;
+      max-width: 800px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
@@ -296,15 +352,15 @@
 
     .modal-close {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 40px;
-      height: 40px;
+      top: 16px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: rgba(255,255,255,0.05);
       border: none;
       color: #888;
-      font-size: 1.2rem;
+      font-size: 1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -320,11 +376,11 @@
 
     .modal-body {
       display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 40px;
+      grid-template-columns: 220px 1fr;
+      gap: 24px;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 600px) {
       .modal-body {
         grid-template-columns: 1fr;
       }
@@ -332,42 +388,42 @@
 
     .modal-poster {
       width: 100%;
-      border-radius: 16px;
+      border-radius: 12px;
       aspect-ratio: 2/3;
       object-fit: cover;
       background: linear-gradient(135deg, #1a1a2e, #16213e);
     }
 
     .modal-info {
-      padding: 24px;
+      padding: 16px 16px 16px 0;
     }
 
-    @media (min-width: 768px) {
+    @media (max-width: 600px) {
       .modal-info {
-        padding: 40px 40px 40px 0;
+        padding: 0 16px 16px;
       }
     }
 
     .modal-title {
-      font-size: 1.8rem;
+      font-size: 1.4rem;
       font-weight: 600;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       line-height: 1.3;
     }
 
     .modal-meta {
       display: flex;
-      gap: 20px;
+      gap: 16px;
       color: #888;
-      font-size: 0.9rem;
-      margin-bottom: 24px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
       flex-wrap: wrap;
     }
 
     .modal-meta span {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
 
     .modal-rating {
@@ -375,48 +431,40 @@
     }
 
     .modal-section {
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
 
     .modal-section h3 {
-      font-size: 0.8rem;
-      color: #666;
+      font-size: 0.7rem;
+      color: #555;
       letter-spacing: 0.1em;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       text-transform: uppercase;
     }
 
-    .modal-tags {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .modal-tag {
-      padding: 6px 14px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 16px;
-      font-size: 0.8rem;
-      color: #aaa;
+    .modal-intro {
+      color: #888;
+      line-height: 1.6;
+      font-size: 0.85rem;
     }
 
     .resource-links {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .resource-link {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 14px 18px;
+      gap: 10px;
+      padding: 12px 14px;
       background: rgba(16, 185, 129, 0.08);
       border: 1px solid rgba(16, 185, 129, 0.2);
-      border-radius: 12px;
+      border-radius: 10px;
       color: #10b981;
       text-decoration: none;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       transition: all 0.3s ease;
     }
 
@@ -425,51 +473,47 @@
       border-color: rgba(16, 185, 129, 0.4);
     }
 
-    .resource-link-icon {
-      font-size: 1.1rem;
-    }
-
     .no-resource {
-      padding: 20px;
+      padding: 16px;
       background: rgba(255,255,255,0.02);
       border: 1px dashed rgba(255,255,255,0.1);
-      border-radius: 12px;
-      color: #666;
-      font-size: 0.85rem;
+      border-radius: 10px;
+      color: #555;
+      font-size: 0.8rem;
       text-align: center;
     }
 
     /* 统计 */
     .stats {
       text-align: center;
-      padding: 20px;
-      color: #555;
-      font-size: 0.8rem;
+      padding: 16px;
+      color: #444;
+      font-size: 0.75rem;
     }
 
     /* 空状态 */
     .empty-state {
       grid-column: 1 / -1;
       text-align: center;
-      padding: 80px 40px;
-      color: #444;
+      padding: 60px 20px;
+      color: #333;
     }
 
     .empty-state-icon {
-      font-size: 4rem;
-      margin-bottom: 20px;
+      font-size: 3rem;
+      margin-bottom: 16px;
       opacity: 0.3;
     }
 
     .empty-state h2 {
-      font-size: 1.2rem;
+      font-size: 1rem;
       font-weight: 400;
-      margin-bottom: 10px;
-      color: #555;
+      margin-bottom: 8px;
+      color: #444;
     }
 
     .empty-state p {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
 
     /* 滚动条 */
@@ -492,10 +536,25 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1>影视库</h1>
-    <p class="subtitle">MOVIE & TV COLLECTION</p>
-  </header>
+  <div class="topbar">
+    <div class="logo">
+      <span class="logo-icon">🎬</span>
+      <div>
+        <div class="logo-text">影视库</div>
+        <div class="logo-sub">MOVIE & TV</div>
+      </div>
+    </div>
+    <div class="search-wrapper">
+      <div class="search-icon" onclick="expandSearch()">🔍</div>
+      <div class="search-expanded" id="searchExpanded">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" id="searchInput" placeholder="搜索影视名称..." oninput="renderMovies()">
+          <span class="search-close" onclick="collapseSearch()">✕</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="filters">
     <button class="filter-btn active" data-filter="all">全部</button>
@@ -504,17 +563,7 @@
     <button class="filter-btn" data-filter="has-resource">可播放</button>
   </div>
 
-  <div class="search-container">
-    <div class="search-box">
-      <span>🔍</span>
-      <input type="text" id="searchInput" placeholder="搜索影视名称...">
-    </div>
-  </div>
-
-  <div class="movies-grid" id="moviesGrid">
-    <!-- 动态填充 -->
-  </div>
-
+  <div class="movies-grid" id="moviesGrid"></div>
   <div class="stats" id="stats"></div>
 
   <!-- 详情弹窗 -->
@@ -522,8 +571,7 @@
     <div class="modal-content">
       <button class="modal-close" onclick="closeModal()">✕</button>
       <div class="modal-body">
-        <img class="modal-poster" id="modalPoster" src="" alt="" style="display:none">
-        <div id="modalPosterPlaceholder" style="display:none;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;aspect-ratio:2/3;align-items:center;justify-content:center;color:rgba(255,255,255,0.15);font-size:0.9rem;text-align:center;padding:20px;"></div>
+        <img class="modal-poster" id="modalPoster" src="" alt="">
         <div class="modal-info">
           <h2 class="modal-title" id="modalTitle"></h2>
           <div class="modal-meta">
@@ -534,7 +582,7 @@
           </div>
           <div class="modal-section">
             <h3>简介</h3>
-            <p id="modalIntro" style="color:#888;line-height:1.7;font-size:0.9rem;"></p>
+            <p class="modal-intro" id="modalIntro"></p>
           </div>
           <div class="modal-section">
             <h3>资源链接</h3>
@@ -542,7 +590,7 @@
           </div>
           <div class="modal-section">
             <h3>豆瓣</h3>
-            <a id="modalDouban" href="" target="_blank" style="color:#a78bfa;font-size:0.85rem;"></a>
+            <a id="modalDouban" href="" target="_blank" style="color:#a78bfa;font-size:0.8rem;"></a>
           </div>
         </div>
       </div>
@@ -550,13 +598,25 @@
   </div>
 
   <script>
+    const API_BASE = 'https://media-library-api.jemchmi.workers.dev';
     let movies = [];
     let currentFilter = 'all';
 
-    // 加载数据
+    function expandSearch() {
+      document.getElementById('searchExpanded').classList.add('active');
+      document.querySelector('.search-icon').style.display = 'none';
+      document.getElementById('searchInput').focus();
+    }
+
+    function collapseSearch() {
+      document.getElementById('searchExpanded').classList.remove('active');
+      document.querySelector('.search-icon').style.display = 'flex';
+      document.getElementById('searchInput').value = '';
+      renderMovies();
+    }
+
     async function loadMovies() {
       try {
-        const API_BASE = 'https://media-library-api.jemchmi.workers.dev';
         const response = await fetch(`${API_BASE}/api/movies`);
         const data = await response.json();
         movies = data.movies || [];
@@ -566,18 +626,15 @@
       }
     }
 
-    // 渲染影视列表
     function renderMovies() {
       const grid = document.getElementById('moviesGrid');
       const search = document.getElementById('searchInput').value.toLowerCase();
       
       let filtered = movies.filter(m => {
-        // 筛选
         if (currentFilter === 'movie' && m.type !== 'movie') return false;
         if (currentFilter === 'tv' && m.type !== 'tv') return false;
         if (currentFilter === 'has-resource' && (!m.resources || m.resources.length === 0)) return false;
-        // 搜索
-        if (search && !m.title.toLowerCase().includes(search) && !m.titleCn.toLowerCase().includes(search)) return false;
+        if (search && !m.title.toLowerCase().includes(search) && !(m.titleCn || '').toLowerCase().includes(search)) return false;
         return true;
       });
 
@@ -595,15 +652,11 @@
 
       grid.innerHTML = filtered.map(m => `
         <div class="movie-card" onclick="openModal('${m.id}')">
-          ${m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.titleCn || m.title}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
-          <div class="movie-poster" style="background:linear-gradient(135deg,#1a1a2e,#16213e);display:${m.poster ? 'none' : 'flex'};align-items:center;justify-content:center;color:rgba(255,255,255,0.1);font-size:0.7rem;text-align:center;padding:10px;">
-            ${m.titleCn || m.title}
-          </div>
+          ${m.poster ? `<img class="movie-poster" src="${m.poster}" alt="${m.titleCn || m.title}" onerror="this.style.display='none'">` : ''}
           <div class="movie-tags">
             <span class="tag ${m.type === 'movie' ? 'tag-movie' : 'tag-tv'}">${m.type === 'movie' ? '电影' : '剧集'}</span>
-            ${m.resources && m.resources.length > 0 ? '<span class="tag tag-resource">▶ 可播放</span>' : ''}
+            ${m.resources && m.resources.length > 0 ? '<span class="tag tag-resource">▶</span>' : ''}
           </div>
-          ${m.resources && m.resources.length > 0 ? '<div class="resource-indicator">▶</div>' : ''}
           <div class="movie-overlay">
             <h3 class="movie-title">${m.titleCn || m.title}</h3>
             <div class="movie-meta">
@@ -617,63 +670,59 @@
       document.getElementById('stats').textContent = `共 ${filtered.length} 部`;
     }
 
-    // 打开弹窗
     async function openModal(id) {
-      // 从API获取完整信息（含资源）
-      const resp = await fetch(`${API_BASE}/api/movies/${id}`);
-      const data = await resp.json();
-      const m = data.movie;
-      if (!m) return;
+      try {
+        const resp = await fetch(`${API_BASE}/api/movies/${id}`);
+        const data = await resp.json();
+        const m = data.movie;
+        if (!m) return;
 
-      if (m.poster) {
-        document.getElementById('modalPoster').src = m.poster;
-        document.getElementById('modalPoster').style.display = 'block';
-        document.getElementById('modalPosterPlaceholder').style.display = 'none';
-      } else {
-        document.getElementById('modalPoster').style.display = 'none';
-        document.getElementById('modalPosterPlaceholder').style.display = 'flex';
-        document.getElementById('modalPosterPlaceholder').textContent = m.titleCn || m.title;
+        if (m.poster) {
+          document.getElementById('modalPoster').src = m.poster;
+          document.getElementById('modalPoster').style.display = 'block';
+        } else {
+          document.getElementById('modalPoster').style.display = 'none';
+        }
+
+        document.getElementById('modalTitle').textContent = m.titleCn || m.title;
+        document.getElementById('modalYear').textContent = m.year || '';
+        document.getElementById('modalGenre').textContent = m.genre || '';
+        document.getElementById('modalRating').innerHTML = m.rating ? `<span class="star">★</span> ${m.rating}` : '';
+        document.getElementById('modalType').textContent = m.type === 'movie' ? '电影' : '剧集';
+        document.getElementById('modalIntro').textContent = m.intro || '暂无简介';
+        document.getElementById('modalDouban').href = m.doubanUrl;
+        document.getElementById('modalDouban').textContent = m.doubanUrl;
+
+        const resourcesEl = document.getElementById('modalResources');
+        if (m.resources && m.resources.length > 0) {
+          resourcesEl.innerHTML = m.resources.map(r => `
+            <a href="${r.url}" target="_blank" class="resource-link">
+              <span>📁</span>
+              <span>${r.name || '资源链接'}</span>
+            </a>
+          `).join('');
+        } else {
+          resourcesEl.innerHTML = '<div class="no-resource">暂无资源链接</div>';
+        }
+
+        document.getElementById('modal').classList.add('active');
+      } catch (e) {
+        console.error('加载详情失败:', e);
       }
-      document.getElementById('modalTitle').textContent = m.titleCn || m.title;
-      document.getElementById('modalYear').textContent = m.year || '';
-      document.getElementById('modalGenre').textContent = m.genre || '';
-      document.getElementById('modalRating').innerHTML = m.rating ? `<span class="star">★</span> ${m.rating}` : '';
-      document.getElementById('modalType').textContent = m.type === 'movie' ? '电影' : '剧集';
-      document.getElementById('modalIntro').textContent = m.intro || '暂无简介';
-      document.getElementById('modalDouban').href = m.doubanUrl;
-      document.getElementById('modalDouban').textContent = m.doubanUrl;
-
-      const resourcesEl = document.getElementById('modalResources');
-      if (m.resources && m.resources.length > 0) {
-        resourcesEl.innerHTML = m.resources.map(r => `
-          <a href="${r.url}" target="_blank" class="resource-link">
-            <span class="resource-link-icon">📁</span>
-            <span>${r.name || '资源链接'}</span>
-          </a>
-        `).join('');
-      } else {
-        resourcesEl.innerHTML = '<div class="no-resource">暂无资源链接，等待更新中...</div>';
-      }
-
-      document.getElementById('modal').classList.add('active');
     }
 
-    // 关闭弹窗
     function closeModal() {
       document.getElementById('modal').classList.remove('active');
     }
 
-    // 点击背景关闭
     document.getElementById('modal').addEventListener('click', (e) => {
       if (e.target.id === 'modal') closeModal();
     });
 
-    // ESC 关闭
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') closeModal();
     });
 
-    // 筛选
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -683,10 +732,6 @@
       });
     });
 
-    // 搜索
-    document.getElementById('searchInput').addEventListener('input', renderMovies);
-
-    // 初始化
     loadMovies();
   </script>
 </body>
