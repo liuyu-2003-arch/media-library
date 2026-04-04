@@ -546,8 +546,10 @@
     // 加载数据
     async function loadMovies() {
       try {
-        const response = await fetch('data.json');
-        movies = await response.json();
+        const API_BASE = 'https://media-library-api.jemchmi.workers.dev';
+        const response = await fetch(`${API_BASE}/api/movies`);
+        const data = await response.json();
+        movies = data.movies || [];
         renderMovies();
       } catch (e) {
         console.error('加载数据失败:', e);
@@ -603,8 +605,11 @@
     }
 
     // 打开弹窗
-    function openModal(id) {
-      const m = movies.find(x => x.id === id);
+    async function openModal(id) {
+      // 从API获取完整信息（含资源）
+      const resp = await fetch(`${API_BASE}/api/movies/${id}`);
+      const data = await resp.json();
+      const m = data.movie;
       if (!m) return;
 
       document.getElementById('modalPoster').src = m.poster || '';
