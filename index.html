@@ -119,9 +119,9 @@
     }
 
     .filters.search-active {
-      opacity: 0;
-      transform: translateX(20px);
-      pointer-events: none;
+      opacity: 1;
+      transform: translateX(-100px);
+      pointer-events: auto;
     }
 
     .filter-btn {
@@ -649,11 +649,19 @@
       text-decoration: none;
       font-size: 0.82rem;
       transition: all 0.25s ease;
+      overflow: hidden;
     }
 
     .resource-link:hover {
       background: rgba(16, 185, 129, 0.15);
       border-color: rgba(16, 185, 129, 0.35);
+    }
+
+    .resource-url {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .no-resource {
@@ -1385,7 +1393,7 @@
               <div class="resource-item" data-resource-id="${r.id}">
                 <a href="${r.url}" target="_blank" class="resource-link">
                   <span>📁</span>
-                  <span>${r.name || '资源链接'}</span>
+                  <span class="resource-url">${r.url}</span>
                 </a>
                 <button class="btn-delete" onclick="deleteResource('${m.id}', '${r.id}')" title="删除此链接">✕</button>
               </div>
