@@ -3,14 +3,14 @@
  * 
  * Endpoints:
  * - GET /api/movies - List all movies
- * - POST /api/movies - Add movie from Douban URL
+ * - POST /api/movies - Add movie from Douban URL (fetches data from TMDB)
  * - GET /api/movies/:id - Get movie details
  * - POST /api/movies/:id/resources - Search and add resources
  * - DELETE /api/movies/:id - Delete movie
  */
 
-const DOUBAN_API = 'https://api.douban.com/v2/movie/subject/';
 const PANTALIST_URL = 'http://91panta.cn/';
+const TMDB_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJlYWVlZmU1NTQ5YWZjMjNiODMwYjNmYTllZmI2ZDJmMyIsIm5iZiI6MTcyNDEzNTY0OC4zNDUsInN1YiI6IjY2YzQzOGUwZDIwMzM4ODQ1ODFhYzkzNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.xsJCaik30sTIpcxFztO2Ql_GtOdlsqJJMsZlcbdXWhk';
 
 export default {
   async fetch(request, env, ctx) {
@@ -37,9 +37,9 @@ export default {
         return Response.json({ movies: results }, { headers: corsHeaders });
       }
 
-      // Route: POST /api/movies - Add from Douban URL
+      // Route: POST /api/movies - Add from Douban URL, fetch data from TMDB
       if (path === '/api/movies' && request.method === 'POST') {
-        const { doubanUrl } = await request.json();
+        const { doubanUrl, searchQuery } = await request.json();
         
         if (!doubanUrl || !doubanUrl.includes('douban.com/subject/')) {
           return Response.json({ error: 'Invalid Douban URL' }, { status: 400 });
@@ -61,38 +61,96 @@ export default {
           return Response.json({ movie: existing, status: 'already_exists' });
         }
 
-        // Fetch from Douban API
-        const doubanResp = await fetch(`${DOUBAN_API}${doubanId}`, {
-          headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' }
-        });
-
-        if (!doubanResp.ok) {
-          return Response.json({ error: 'Failed to fetch from Douban' }, { status: 502 });
+        // Search TMDB with the movie name
+        if (!searchQuery) {
+          return Response.json({ error: 'searchQuery required (movie name for TMDB search)' }, { status: 400 });
         }
 
-        const data = await doubanResp.json();
-        const id = doubanId;
-        const itemType = data.episodes_count ? 'tv' : 'movie';
-        const rating = data.rating?.average || '';
+        const searchResp = await fetch(
+          `https://api.tmdb.org/3/search/movie?query=${encodeURIComponent(searchQuery)}`,
+          { headers: { 'Authorization': `Bearer ${TMDB_TOKEN}` } }
+        );
+        
+        if (!searchResp.ok) {
+          return Response.json({ error: 'TMDB search failed' }, { status: 502 });
+        }
 
+        const searchData = await searchResp.json();
+        if (!searchData.results || searchData.results.length === 0) {
+          return Response.json({ error: 'Movie not found on TMDB' }, { status: 404 });
+        }
+
+        const tmdbMovie = searchData.results[0];
+        const tmdbId = tmdbMovie.id;
+
+        // Fetch full details from TMDB
+        const detailsResp = await fetch(
+          `https://api.tmdb.org/3/movie/${tmdbId}`,
+          { headers: { 'Authorization': `Bearer ${TMDB_TOKEN}` } }
+        );
+        const details = await detailsResp.json();
+
+        // Fetch credits (cast & crew)
+        const creditsResp = await fetch(
+          `https://api.tmdb.org/3/movie/${tmdbId}/credits`,
+          { headers: { 'Authorization': `Bearer ${TMDB_TOKEN}` } }
+        );
+        const credits = await creditsResp.json();
+
+        // Prepare cast data with avatars
+        const castList = (credits.cast || []).slice(0, 8).map(c => ({
+          name: c.name,
+          profile_path: c.profile_path
+        }));
+        const castNames = castList.map(c => c.name).join(', ');
+
+        // Director
+        const directors = (credits.crew || []).filter(c => c.job === 'Director').map(c => c.name);
+        const director = directors.join(', ');
+
+        // Genres
+        const genres = (details.genres || []).map(g => g.name).join(' / ');
+
+        // Poster
+        const poster = details.poster_path 
+          ? `https://image.tmdb.org/t/p/original${details.poster_path}` 
+          : '';
+
+        // Ratings
+        const tmdbRating = details.vote_average ? String(Math.round(details.vote_average * 10) / 10) : '';
+        const imdbId = details.imdb_id || '';
+
+        // Year
+        const year = details.release_date ? details.release_date.substring(0, 4) : '';
+
+        // Intro
+        const intro = details.overview || '';
+
+        // Insert into database
         await env.DB.prepare(`
-          INSERT INTO movies (id, douban_id, douban_url, title, title_cn, year, type, rating, genre, director, cast, intro, poster)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO movies (id, douban_id, douban_url, title, title_cn, year, type, rating, tmdb_rating, imdb_id, genre, director, cast, cast_data, intro, poster, tmdb_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).bind(
-          id, doubanId, doubanUrl,
-          data.title || '',
-          data.original_title || data.title || '',
-          data.year || '',
-          itemType,
-          String(rating),
-          (data.genres || []).join(' / '),
-          (data.directors || []).map(d => d.name).join(', '),
-          (data.casts || []).slice(0, 5).map(c => c.name).join(', '),
-          data.summary || '',
-          (data.image || '').replace('s_ratio_poster', 'l_ratio_poster')
+          doubanId,
+          doubanId,
+          doubanUrl,
+          details.original_title || details.title || '',
+          details.title || '',
+          year,
+          details.number_of_seasons ? 'tv' : 'movie',
+          '', // douban rating (empty since we use TMDB)
+          tmdbRating,
+          imdbId,
+          genres,
+          director,
+          castNames,
+          JSON.stringify(castList),
+          intro,
+          poster,
+          String(tmdbId)
         ).run();
 
-        const movie = await env.DB.prepare('SELECT * FROM movies WHERE id = ?').bind(id).first();
+        const movie = await env.DB.prepare('SELECT * FROM movies WHERE id = ?').bind(doubanId).first();
         return Response.json({ movie, status: 'created' }, { headers: corsHeaders });
       }
 
@@ -132,7 +190,6 @@ export default {
         const searchQuery = encodeURIComponent(movie.title_cn || movie.title);
         const searchUrl = `${PANTALIST_URL}?keyword=${searchQuery}`;
         
-        // Fetch search results page
         const searchResp = await fetch(searchUrl, {
           headers: { 
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
@@ -148,7 +205,6 @@ export default {
         // Verify and add links
         const added = [];
         for (const link of links) {
-          // Check if link already exists
           const existing = await env.DB.prepare(
             'SELECT * FROM resources WHERE movie_id = ? AND url = ?'
           ).bind(movieId, link).first();

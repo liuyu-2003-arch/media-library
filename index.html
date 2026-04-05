@@ -847,6 +847,122 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* 添加按钮 */
+    .add-btn {
+      position: fixed;
+      bottom: 80px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+      transition: all 0.3s ease;
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+    }
+
+    /* 添加电影弹窗 */
+    .add-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .add-modal.active {
+      display: flex;
+    }
+
+    .add-modal-content {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow);
+    }
+
+    .add-modal-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+
+    .add-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: none;
+      border: none;
+      color: var(--text-tertiary);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .add-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .add-form input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .add-form input:focus {
+      border-color: var(--accent);
+    }
+
+    .add-form input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .add-form button {
+      padding: 12px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .add-form button:hover {
+      background: var(--accent-hover);
+    }
+
+    .add-form button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -929,6 +1045,21 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- 添加按钮 -->
+  <button class="add-btn" onclick="openAddModal()">+</button>
+
+  <!-- 添加电影弹窗 -->
+  <div class="add-modal" id="addModal">
+    <div class="add-modal-content">
+      <div class="add-modal-title">添加电影</div>
+      <form class="add-form" onsubmit="submitAddMovie(event)">
+        <input type="url" id="doubanUrlInput" placeholder="豆瓣链接" required>
+        <input type="text" id="movieNameInput" placeholder="电影名称（用于搜索TMDB）" required>
+        <button type="submit" id="addSubmitBtn">添加到影视库</button>
+      </form>
+    </div>
+  </div>
 
   <script>
     const API_BASE = 'https://media-library-api.jemchmi.workers.dev';
@@ -1214,6 +1345,62 @@
     setTheme(getTheme());
     loadMovies();
     handleRoute();
+
+    // 添加电影
+    function openAddModal() {
+      document.getElementById('addModal').classList.add('active');
+      document.getElementById('doubanUrlInput').focus();
+    }
+
+    function closeAddModal() {
+      document.getElementById('addModal').classList.remove('active');
+      document.getElementById('doubanUrlInput').value = '';
+      document.getElementById('movieNameInput').value = '';
+      document.getElementById('addSubmitBtn').disabled = false;
+      document.getElementById('addSubmitBtn').textContent = '添加到影视库';
+    }
+
+    async function submitAddMovie(e) {
+      e.preventDefault();
+      const doubanUrl = document.getElementById('doubanUrlInput').value;
+      const searchQuery = document.getElementById('movieNameInput').value;
+      const btn = document.getElementById('addSubmitBtn');
+      
+      btn.disabled = true;
+      btn.textContent = '添加中...';
+      
+      try {
+        const resp = await fetch(`${API_BASE}/api/movies`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ doubanUrl, searchQuery })
+        });
+        
+        const data = await resp.json();
+        
+        if (!resp.ok) {
+          throw new Error(data.error || '添加失败');
+        }
+        
+        if (data.status === 'already_exists') {
+          showToast('电影已存在');
+        } else {
+          showToast('添加成功！');
+          await loadMovies();
+        }
+        
+        closeAddModal();
+      } catch (err) {
+        showToast(err.message);
+        btn.disabled = false;
+        btn.textContent = '添加到影视库';
+      }
+    }
+
+    // 点击弹窗背景关闭
+    document.getElementById('addModal').addEventListener('click', (e) => {
+      if (e.target.id === 'addModal') closeAddModal();
+    });
   </script>
 </body>
 </html>
