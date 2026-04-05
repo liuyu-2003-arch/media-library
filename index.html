@@ -630,6 +630,98 @@
       text-align: center;
     }
 
+    /* 详情页扩展 */
+    .detail-meta-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .detail-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .detail-meta-item .label {
+      color: var(--text-tertiary);
+    }
+
+    .detail-director {
+      margin-bottom: 16px;
+    }
+
+    .detail-director-label {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .detail-director-name {
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
+    .detail-cast {
+      margin-bottom: 20px;
+    }
+
+    .detail-cast-label {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .detail-cast-list {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: thin;
+    }
+
+    .detail-cast-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .detail-cast-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      margin-bottom: 6px;
+    }
+
+    .detail-cast-name {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      max-width: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .detail-divider {
+      height: 1px;
+      background: var(--border-color);
+      margin: 20px 0;
+    }
+
     /* 滚动条 */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -676,7 +768,6 @@
           <button class="filter-btn active" data-filter="all">全部</button>
           <button class="filter-btn" data-filter="movie">电影</button>
           <button class="filter-btn" data-filter="tv">剧集</button>
-          <button class="filter-btn" data-filter="has-resource">可播放</button>
         </div>
         <div class="search-wrapper">
           <div class="search-icon" onclick="expandSearch()">🔍</div>
@@ -707,16 +798,45 @@
         <img class="detail-poster" id="detailPoster" src="" alt="">
         <div class="detail-info">
           <h1 class="detail-title" id="detailTitle"></h1>
-          <div class="detail-meta">
-            <span id="detailYear"></span>
-            <span class="detail-rating" id="detailRating"></span>
-            <span id="detailGenre"></span>
+          <div class="detail-meta-row">
+            <div class="detail-meta-item">
+              <span class="label">年份</span>
+              <span id="detailYear"></span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="label">评分</span>
+              <span class="detail-rating" id="detailRating"></span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="label">类型</span>
+              <span id="detailGenre"></span>
+            </div>
           </div>
           <div class="detail-genre" id="detailGenreTags"></div>
+          <div class="detail-divider"></div>
+          <div class="detail-director" id="detailDirectorSection" style="display:none;">
+            <div class="detail-director-label">导演</div>
+            <div class="detail-director-name" id="detailDirector"></div>
+          </div>
           <p class="detail-intro" id="detailIntro"></p>
         </div>
       </div>
+      
+      <!-- 演员 -->
+      <div class="detail-section" id="detailCastSection" style="display:none;">
+        <div class="detail-section-title">主演</div>
+        <div class="detail-cast-list" id="detailCast"></div>
+      </div>
+
       <div class="detail-links" id="detailLinks"></div>
+      
+      <div class="detail-divider"></div>
+      
+      <div class="detail-section">
+        <div class="detail-section-title">剧情简介</div>
+        <p class="detail-intro" id="detailFullIntro" style="line-height:1.8;"></p>
+      </div>
+      
       <div class="detail-section">
         <div class="detail-section-title">资源链接</div>
         <div class="resource-links" id="detailResources"></div>
@@ -794,7 +914,6 @@
       let filtered = movies.filter(m => {
         if (currentFilter === 'movie' && m.type !== 'movie') return false;
         if (currentFilter === 'tv' && m.type !== 'tv') return false;
-        if (currentFilter === 'has-resource' && (!m.resources || m.resources.length === 0)) return false;
         if (search && !(m.titleCn || '').toLowerCase().includes(search) && !m.title.toLowerCase().includes(search)) return false;
         return true;
       });
@@ -862,7 +981,37 @@
           genreTags.innerHTML = '';
         }
 
-        document.getElementById('detailIntro').textContent = m.intro || '暂无简介';
+        // Director
+        const directorSection = document.getElementById('detailDirectorSection');
+        if (m.director) {
+          document.getElementById('detailDirector').textContent = m.director;
+          directorSection.style.display = 'block';
+        } else {
+          directorSection.style.display = 'none';
+        }
+
+        // Short intro
+        const shortIntro = m.intro ? (m.intro.length > 80 ? m.intro.substring(0, 80) + '...' : m.intro) : '';
+        document.getElementById('detailIntro').textContent = shortIntro;
+
+        // Full intro
+        document.getElementById('detailFullIntro').textContent = m.intro || '暂无简介';
+
+        // Cast
+        const castSection = document.getElementById('detailCastSection');
+        const castList = document.getElementById('detailCast');
+        if (m.cast) {
+          const castNames = m.cast.split(', ').slice(0, 8);
+          castList.innerHTML = castNames.map(name => `
+            <div class="detail-cast-item">
+              <div class="detail-cast-avatar">${name.charAt(0)}</div>
+              <div class="detail-cast-name">${name}</div>
+            </div>
+          `).join('');
+          castSection.style.display = 'block';
+        } else {
+          castSection.style.display = 'none';
+        }
 
         const linksEl = document.getElementById('detailLinks');
         let linksHtml = '';
