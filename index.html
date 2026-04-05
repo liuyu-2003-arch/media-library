@@ -1268,41 +1268,6 @@
     function collapseSearch() {
       document.getElementById('searchExpanded').classList.remove('active');
       document.querySelector('.search-icon').style.display = 'flex';
-      document.getElementById('filters').classList.remove('search-active');
-      document.getElementById('searchInput').value = '';
-      renderMovies();
-    }
-
-    // toggleFilterMenu disabled else {
-        dropdown.style.display = 'none';
-      }
-    }
-
-    // loadFilterOptions disabled')">${translateGenre(g)}</span>`
-      ).join('');
-      
-      // Load years
-      const years = [...new Set(movies.map(m => m.year).filter(Boolean)];
-      document.getElementById('filterYears').innerHTML = years.map(y => 
-        `<span class="filter-tag" onclick="applyFilter('year','${y}')">${y}</span>`
-      ).join('');
-      
-      // Load regions
-      const regions = [...new Set(movies.map(m => m.region).filter(Boolean)];
-      document.getElementById('filterRegions').innerHTML = regions.map(r => 
-        `<span class="filter-tag" onclick="applyFilter('region','${r}')">${r}</span>`
-      ).join('');
-    }
-
-    // applyFilter disabled=${encodeURIComponent(value)}`);
-      renderMovies();
-    }
-
-    function filterByGenre(genre) {
-      document.getElementById('homePage').style.display = 'block';
-      document.getElementById('detailPage').classList.remove('active');
-      currentFilter = genre;
-      history.pushState({ genre }, '', `/?genre=${encodeURIComponent(genre)}`);
       renderMovies();
       window.scrollTo(0, 0);
     }
