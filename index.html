@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>影视库</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+  <title>FilmVault</title>
+  <link rel="icon" href="https://pub-53636cd060c94f6190dae2c201d6c7c2.r2.dev/favicon.svg">
   <style>
     :root {
       /* TMDB 风格 - 深色主题 */
@@ -91,19 +91,30 @@
     .logo {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       text-decoration: none;
       color: var(--text-primary);
     }
 
     .logo-icon {
-      font-size: 1.3rem;
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent), #a855f7);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
     }
 
     .logo-text {
       font-size: 1rem;
-      font-weight: 600;
-      letter-spacing: 0.02em;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .topbar-right {
@@ -1040,8 +1051,8 @@
     <div class="topbar">
       <div class="topbar-left">
         <a href="/" class="logo" onclick="goHome(); return false;">
-          <span class="logo-icon">🎬</span>
-          <span class="logo-text">影视库</span>
+          <span class="logo-icon">▶</span>
+          <span class="logo-text">FilmVault</span>
         </a>
       </div>
       <div class="topbar-right">
@@ -1215,7 +1226,7 @@
             <span class="tag ${m.type === 'movie' ? 'tag-movie' : 'tag-tv'}">${m.type === 'movie' ? '电影' : '剧集'}</span>
             ${m.resources && m.resources.length > 0 ? '<span class="tag tag-resource">▶</span>' : ''}
           </div>
-          ${m.rating ? `<div class="movie-rating-badge"><span class="star">★</span>${m.rating}</div>` : ''}
+          ${m.tmdb_rating ? `<div class="movie-rating-badge"><span class="star">★</span>${m.tmdb_rating}</div>` : ''}
           <div class="movie-card-title">${m.titleCn || m.title}</div>
           <div class="movie-overlay">
             <h3 class="movie-title-overlay">${m.titleCn || m.title}</h3>
