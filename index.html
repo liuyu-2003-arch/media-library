@@ -568,11 +568,18 @@
 
     .detail-genre-tag {
       padding: 4px 12px;
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
+      background: rgba(88, 166, 255, 0.1);
+      border: 1px solid rgba(88, 166, 255, 0.3);
       border-radius: 12px;
       font-size: 0.75rem;
-      color: var(--text-secondary);
+      color: var(--accent-solid, #58a6ff);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .detail-genre-tag:hover {
+      background: rgba(88, 166, 255, 0.2);
+      border-color: rgba(88, 166, 255, 0.5);
     }
 
     .detail-intro {
@@ -1151,6 +1158,22 @@
       return yearColors[year] || { bg: 'rgba(100, 100, 100, 0.9)', border: 'rgba(100, 100, 100, 0.5)' };
     }
 
+    // Genre 中文翻译
+    const genreCN = {
+      'Horror': '恐怖', 'Comedy': '喜剧', 'Adventure': '冒险', 'Animation': '动画',
+      'Family': '家庭', 'Thriller': '惊悚', 'Science Fiction': '科幻', 'Action': '动作',
+      'Drama': '剧情', 'Romance': '爱情', 'Fantasy': '奇幻', 'Mystery': '悬疑',
+      'Crime': '犯罪', 'Documentary': '纪录片', 'Music': '音乐', 'War': '战争',
+      'History': '历史', 'Western': '西部', 'Musical': '歌舞', 'Sport': '运动',
+      'Biopic': '传记', 'Animation / Comedy / Family': '动画 / 喜剧 / 家庭',
+      'Horror / Comedy / Adventure': '恐怖 / 喜剧 / 冒险',
+      'Horror / Comedy': '恐怖 / 喜剧',
+      'Horror / Thriller': '恐怖 / 惊悚',
+      'Science Fiction / Action / Adventure': '科幻 / 动作 / 冒险',
+      'Action / Thriller': '动作 / 惊悚',
+    };
+    function translateGenre(g) { return genreCN[g] || g; }
+
     // 主题
     function getTheme() {
       return localStorage.getItem('theme') || 'light';
@@ -1195,6 +1218,14 @@
       history.pushState(null, '', '/');
     }
 
+    function filterByGenre(genre) {
+      document.getElementById('homePage').style.display = 'block';
+      document.getElementById('detailPage').classList.remove('active');
+      currentFilter = genre;
+      renderMovies();
+      window.scrollTo(0, 0);
+    }
+
     async function loadMovies() {
       try {
         const response = await fetch(`${API_BASE}/api/movies`);
@@ -1213,6 +1244,7 @@
       let filtered = movies.filter(m => {
         if (currentFilter === 'movie' && m.type !== 'movie') return false;
         if (currentFilter === 'tv' && m.type !== 'tv') return false;
+        if (currentFilter !== 'all' && !currentFilter.startsWith('movie') && !currentFilter.startsWith('tv') && !m.genre.includes(currentFilter)) return false;
         if (search && !(m.titleCn || '').toLowerCase().includes(search) && !m.title.toLowerCase().includes(search)) return false;
         return true;
       });
@@ -1271,7 +1303,10 @@
 
         const genreTags = document.getElementById('detailGenreTags');
         if (m.genre) {
-          genreTags.innerHTML = m.genre.split(' / ').map(g => `<span class="detail-genre-tag">${g}</span>`).join('');
+          genreTags.innerHTML = m.genre.split(' / ').map(g => {
+            const cn = translateGenre(g.trim());
+            return `<a href="#" class="detail-genre-tag" onclick="filterByGenre('${g.trim()}'); return false;">${cn}</a>`;
+          }).join('');
         } else {
           genreTags.innerHTML = '';
         }
