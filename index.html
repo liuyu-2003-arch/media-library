@@ -198,21 +198,19 @@
     }
 
     .search-expanded {
-      position: absolute;
-      right: 50px;
-      top: 50%;
-      transform: translateY(-50%) scale(0.9);
-      width: 240px;
+      position: fixed;
+      right: 20px;
+      top: 12px;
+      width: 200px;
       opacity: 0;
       pointer-events: none;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 10;
+      z-index: 100;
     }
 
     .search-expanded.active {
       opacity: 1;
       pointer-events: auto;
-      transform: translateY(-50%) scale(1);
     }
 
     .search-box {
