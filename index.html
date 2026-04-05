@@ -1382,7 +1382,7 @@
               <button class="btn-refresh" onclick="refreshResources('${m.id}')">🔄 重新搜索</button>
             </div>
             ${m.resources.map(r => `
-              <div class="resource-item">
+              <div class="resource-item" data-resource-id="${r.id}">
                 <a href="${r.url}" target="_blank" class="resource-link">
                   <span>📁</span>
                   <span>${r.name || '资源链接'}</span>
@@ -1419,22 +1419,33 @@
     }
 
     async function deleteResource(movieId, resourceId) {
-      if (!confirm('确定删除这个链接？')) return;
+      // 乐观更新：立即动画删除
+      const item = document.querySelector(`[data-resource-id="${resourceId}"]`);
+      if (item) {
+        item.style.transition = 'all 0.3s ease';
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(20px)';
+        item.style.maxHeight = '0';
+        item.style.marginBottom = '0';
+        item.style.padding = '0';
+        setTimeout(() => item.remove(), 300);
+      }
       
+      // 更新数量
+      const countEl = document.querySelector('.resources-count');
+      if (countEl) {
+        const current = parseInt(countEl.textContent) || 1;
+        countEl.textContent = `${current - 1} 个链接`;
+      }
+      
+      // 后台删除
       try {
-        const resp = await fetch(`${API_BASE}/api/resources/${resourceId}`, {
+        await fetch(`${API_BASE}/api/resources/${resourceId}`, {
           method: 'DELETE'
         });
-        
-        if (resp.ok) {
-          showToast('已删除');
-          // 重新加载详情
-          await openMovie(movieId);
-        } else {
-          showToast('删除失败');
-        }
       } catch (e) {
-        showToast('删除失败');
+        // 删除失败，重新加载
+        await openMovie(movieId);
       }
     }
 
