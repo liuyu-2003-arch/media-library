@@ -274,6 +274,7 @@
       text-decoration: none;
       color: inherit;
       display: block;
+      position: relative;
     }
 
     .movie-card:hover {
@@ -357,6 +358,25 @@
     .tag-movie { background: var(--tag-movie); }
     .tag-tv { background: var(--tag-tv); }
     .tag-resource { background: var(--tag-resource); }
+
+    /* 评分徽章 */
+    .movie-rating-badge {
+      position: absolute;
+      bottom: 36px;
+      left: 6px;
+      background: rgba(0,0,0,0.75);
+      color: var(--rating-color);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .movie-rating-badge .star {
+      color: var(--rating-color);
+    }
 
     /* 电影标题 */
     .movie-card-title {
@@ -498,14 +518,21 @@
     .detail-info {
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
     }
 
     .detail-title {
       font-size: 1.6rem;
       font-weight: 600;
-      margin-bottom: 10px;
+      margin-bottom: 4px;
       line-height: 1.3;
+    }
+
+    .detail-title-en {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      font-weight: 400;
     }
 
     .detail-meta {
@@ -1019,14 +1046,11 @@
         <img class="detail-poster" id="detailPoster" src="" alt="">
         <div class="detail-info">
           <h1 class="detail-title" id="detailTitle"></h1>
+          <div class="detail-title-en" id="detailTitleEn"></div>
           <div class="detail-meta-row">
             <div class="detail-meta-item">
               <span class="label">年份</span>
               <span id="detailYear"></span>
-            </div>
-            <div class="detail-meta-item">
-              <span class="label">类型</span>
-              <span id="detailGenre"></span>
             </div>
           </div>
           <div class="detail-ratings" id="detailRatings"></div>
@@ -1161,6 +1185,7 @@
             <span class="tag ${m.type === 'movie' ? 'tag-movie' : 'tag-tv'}">${m.type === 'movie' ? '电影' : '剧集'}</span>
             ${m.resources && m.resources.length > 0 ? '<span class="tag tag-resource">▶</span>' : ''}
           </div>
+          ${m.rating ? `<div class="movie-rating-badge"><span class="star">★</span>${m.rating}</div>` : ''}
           <div class="movie-card-title">${m.titleCn || m.title}</div>
           <div class="movie-overlay">
             <h3 class="movie-title-overlay">${m.titleCn || m.title}</h3>
@@ -1194,8 +1219,8 @@
         }
 
         document.getElementById('detailTitle').textContent = m.titleCn || m.title;
+        document.getElementById('detailTitleEn').textContent = m.title || '';
         document.getElementById('detailYear').textContent = m.year || '';
-        document.getElementById('detailGenre').textContent = m.genre || '';
 
         // Ratings from multiple sources
         const ratingsEl = document.getElementById('detailRatings');
@@ -1223,13 +1248,24 @@
         const crewList = document.getElementById('detailCrewList');
         let crewHtml = '';
         
-        // Add director first
+        // Add director first (try to get avatar from director_data)
         if (m.director) {
+          let directorData = [];
+          try {
+            directorData = m.director_data ? JSON.parse(m.director_data) : [];
+          } catch(e) {}
+          
           const directorNames = m.director.split(', ');
-          for (const name of directorNames) {
+          for (let i = 0; i < directorNames.length; i++) {
+            const name = directorNames[i];
+            const director = directorData[i];
+            const initial = name.charAt(0);
+            const imgHtml = director && director.profile_path 
+              ? `<img src="https://image.tmdb.org/t/p/w92${director.profile_path}" alt="${name}" onerror="this.parentElement.textContent='${initial}'">` 
+              : `<span style="font-size:1.2rem">🎬</span>`;
             crewHtml += `
             <div class="detail-crew-item">
-              <div class="detail-crew-avatar">${name.charAt(0)}</div>
+              <div class="detail-crew-avatar">${imgHtml}</div>
               <div class="detail-crew-role">导演</div>
               <div class="detail-crew-name">${name}</div>
             </div>`;
