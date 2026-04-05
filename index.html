@@ -943,32 +943,6 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* 添加按钮 */
-    .add-btn {
-      position: fixed;
-      bottom: 80px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: var(--accent);
-      border: none;
-      color: #fff;
-      font-size: 1.5rem;
-      cursor: pointer;
-      box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
-      transition: all 0.3s ease;
-      z-index: 90;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .add-btn:hover {
-      transform: scale(1.1);
-      box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
-    }
-
     /* 添加电影弹窗 */
     .add-modal {
       display: none;
@@ -1137,9 +1111,6 @@
   </div>
 
   <div class="toast" id="toast"></div>
-
-  <!-- 添加按钮 -->
-  <button class="add-btn" onclick="openAddModal()">+</button>
 
   <!-- 添加电影弹窗 -->
   <div class="add-modal" id="addModal">
