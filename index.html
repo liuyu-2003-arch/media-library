@@ -666,6 +666,57 @@
       text-align: center;
     }
 
+    .resources-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .resources-count {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+
+    .btn-refresh {
+      padding: 6px 12px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-refresh:hover {
+      background: var(--accent-hover);
+    }
+
+    .resource-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .btn-delete {
+      padding: 4px 8px;
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 4px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-delete:hover {
+      background: #ef4444;
+      color: #fff;
+    }
+
     /* 详情页扩展 */
     .detail-meta-row {
       display: flex;
@@ -1325,14 +1376,26 @@
 
         const resourcesEl = document.getElementById('detailResources');
         if (m.resources && m.resources.length > 0) {
-          resourcesEl.innerHTML = m.resources.map(r => `
-            <a href="${r.url}" target="_blank" class="resource-link">
-              <span>📁</span>
-              <span>${r.name || '资源链接'}</span>
-            </a>
-          `).join('');
+          resourcesEl.innerHTML = `
+            <div class="resources-header">
+              <span class="resources-count">${m.resources.length} 个链接</span>
+              <button class="btn-refresh" onclick="refreshResources('${m.id}')">🔄 重新搜索</button>
+            </div>
+            ${m.resources.map(r => `
+              <div class="resource-item">
+                <a href="${r.url}" target="_blank" class="resource-link">
+                  <span>📁</span>
+                  <span>${r.name || '资源链接'}</span>
+                </a>
+                <button class="btn-delete" onclick="deleteResource('${m.id}', '${r.id}')" title="删除此链接">✕</button>
+              </div>
+            `).join('')}
+          `;
         } else {
-          resourcesEl.innerHTML = '<div class="no-resource">暂无资源链接</div>';
+          resourcesEl.innerHTML = `
+            <div class="no-resource">暂无资源链接</div>
+            <button class="btn-refresh" onclick="refreshResources('${m.id}')">🔄 搜索资源</button>
+          `;
         }
 
         document.getElementById('homePage').style.display = 'none';
@@ -1352,6 +1415,55 @@
         navigator.share({ title, text: `${title} - 影视库`, url }).catch(() => {});
       } else {
         navigator.clipboard.writeText(url).then(() => showToast('链接已复制'));
+      }
+    }
+
+    async function deleteResource(movieId, resourceId) {
+      if (!confirm('确定删除这个链接？')) return;
+      
+      try {
+        const resp = await fetch(`${API_BASE}/api/resources/${resourceId}`, {
+          method: 'DELETE'
+        });
+        
+        if (resp.ok) {
+          showToast('已删除');
+          // 重新加载详情
+          await openMovie(movieId);
+        } else {
+          showToast('删除失败');
+        }
+      } catch (e) {
+        showToast('删除失败');
+      }
+    }
+
+    async function refreshResources(movieId) {
+      const btn = document.querySelector('.btn-refresh');
+      if (btn) {
+        btn.textContent = '搜索中...';
+        btn.disabled = true;
+      }
+      
+      try {
+        const resp = await fetch(`${API_BASE}/api/movies/${movieId}/resources`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        
+        const data = await resp.json();
+        showToast(`找到 ${data.resources_found} 个链接`);
+        
+        // 重新加载详情
+        await openMovie(movieId);
+      } catch (e) {
+        showToast('搜索失败');
+      }
+      
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '🔄 重新搜索';
       }
     }
 

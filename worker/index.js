@@ -226,6 +226,13 @@ export default {
         }, { headers: corsHeaders });
       }
 
+      // Route: DELETE /api/resources/:id - Delete a resource
+      if (path.match(/^\/api\/resources\/([^/]+)$/) && request.method === 'DELETE') {
+        const resourceId = path.match(/^\/api\/resources\/([^/]+)$/)[1];
+        await env.DB.prepare('DELETE FROM resources WHERE id = ?').bind(resourceId).run();
+        return Response.json({ status: 'deleted' }, { headers: corsHeaders });
+      }
+
       // Health check
       if (path === '/api/health') {
         return Response.json({ status: 'ok' }, { headers: corsHeaders });
