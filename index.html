@@ -1291,13 +1291,13 @@
       ).join('');
       
       // Load years
-      const years = [...new Set(movies.map(m => m.year).filter(Boolean))];
+      const years = [...new Set(movies.map(m => m.year).filter(Boolean)];
       document.getElementById('filterYears').innerHTML = years.map(y => 
         `<span class="filter-tag" onclick="applyFilter('year','${y}')">${y}</span>`
       ).join('');
       
       // Load regions
-      const regions = [...new Set(movies.map(m => m.region).filter(Boolean))];
+      const regions = [...new Set(movies.map(m => m.region).filter(Boolean)];
       document.getElementById('filterRegions').innerHTML = regions.map(r => 
         `<span class="filter-tag" onclick="applyFilter('region','${r}')">${r}</span>`
       ).join('');
