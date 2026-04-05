@@ -28,13 +28,25 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    // Convert snake_case DB keys to camelCase
+    const toCamelCase = (obj) => {
+      if (Array.isArray(obj)) return obj.map(toCamelCase);
+      if (obj === null || typeof obj !== 'object') return obj;
+      return Object.fromEntries(
+        Object.entries(obj).map(([k, v]) => [
+          k.replace(/_([a-z])/g, (_, l) => l.toUpperCase()),
+          v && typeof v === 'object' ? toCamelCase(v) : v
+        ])
+      );
+    };
+
     try {
       // Route: GET /api/movies
       if (path === '/api/movies' && request.method === 'GET') {
         const { results } = await env.DB.prepare(
           'SELECT * FROM movies ORDER BY added_at DESC'
         ).all();
-        return Response.json({ movies: results }, { headers: corsHeaders });
+        return Response.json({ movies: toCamelCase(results) }, { headers: corsHeaders });
       }
 
       // Route: POST /api/movies - Add from Douban URL, fetch data from TMDB
@@ -151,7 +163,7 @@ export default {
         ).run();
 
         const movie = await env.DB.prepare('SELECT * FROM movies WHERE id = ?').bind(doubanId).first();
-        return Response.json({ movie, status: 'created' }, { headers: corsHeaders });
+        return Response.json({ movie: toCamelCase(movie), status: 'created' }, { headers: corsHeaders });
       }
 
       // Route: GET /api/movies/:id
@@ -167,7 +179,7 @@ export default {
           'SELECT * FROM resources WHERE movie_id = ? ORDER BY added_at DESC'
         ).bind(id).all();
 
-        return Response.json({ movie: { ...movie, resources } }, { headers: corsHeaders });
+        return Response.json({ movie: toCamelCase({ ...movie, resources }) }, { headers: corsHeaders });
       }
 
       // Route: DELETE /api/movies/:id
