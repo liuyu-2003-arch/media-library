@@ -1383,30 +1383,22 @@
         linksEl.innerHTML = linksHtml;
 
         const resourcesEl = document.getElementById('detailResources');
-        // Filter out invalid links (ending with ..)
-        const validResources = (m.resources || []).filter(r => !r.url || !r.url.endsWith('..'));
-        if (validResources.length > 0) {
-          resourcesEl.innerHTML = `
-            <div class="resources-header">
-              <span class="resources-count">${validResources.length} 个链接</span>
-              <button class="btn-refresh" onclick="refreshResources('${m.id}')">🔄 重新搜索</button>
-            </div>
-            ${validResources.map(r => `
-              <div class="resource-item" data-resource-id="${r.id}">
-                <a href="${r.url}" target="_blank" class="resource-link">
-                  <span>📁</span>
-                  <span class="resource-url">${r.url}</span>
-                </a>
-                <button class="btn-delete" onclick="deleteResource('${m.id}', '${r.id}')" title="删除此链接">✕</button>
-              </div>
-            `).join('')}
-          `;
-        } else {
-          resourcesEl.innerHTML = `
-            <div class="no-resource">暂无资源链接</div>
-            <button class="btn-refresh" onclick="refreshResources('${m.id}')">🔄 搜索资源</button>
-          `;
-        }
+        // Generate 91panta search link
+        const searchTitle = encodeURIComponent(m.title_cn || m.title);
+        const searchUrl = `https://91panta.cn/search?keyword=${searchTitle}`;
+        
+        resourcesEl.innerHTML = `
+          <div class="resources-header">
+            <span class="resources-count">在 91panta 搜索</span>
+            <button class="btn-refresh" onclick="refreshResources('${m.id}')">🔄 重新搜索</button>
+          </div>
+          <div class="resource-item">
+            <a href="${searchUrl}" target="_blank" class="resource-link">
+              <span>🔍</span>
+              <span class="resource-url">点击搜索: ${m.title_cn || m.title}</span>
+            </a>
+          </div>
+        `;
 
         document.getElementById('homePage').style.display = 'none';
         document.getElementById('detailPage').classList.add('active');
