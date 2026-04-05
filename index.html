@@ -1211,17 +1211,19 @@
       renderMovies();
     }
 
-    function goHome() {
-      document.getElementById('homePage').style.display = 'block';
-      document.getElementById('detailPage').classList.remove('active');
-      window.scrollTo(0, 0);
-      history.pushState(null, '', '/');
-    }
-
     function filterByGenre(genre) {
       document.getElementById('homePage').style.display = 'block';
       document.getElementById('detailPage').classList.remove('active');
       currentFilter = genre;
+      history.pushState({ genre }, '', `/?genre=${encodeURIComponent(genre)}`);
+      renderMovies();
+      window.scrollTo(0, 0);
+    }
+    function goHome() {
+      currentFilter = 'all';
+      document.getElementById('homePage').style.display = 'block';
+      document.getElementById('detailPage').classList.remove('active');
+      history.pushState(null, '', '/');
       renderMovies();
       window.scrollTo(0, 0);
     }
@@ -1273,7 +1275,8 @@
         </a>
       `).join('');
 
-      document.getElementById('stats').textContent = `共 ${filtered.length} 部`;
+      let statsText = currentFilter === 'all' ? '' : `筛选: ${translateGenre(currentFilter)} | `;
+      document.getElementById('stats').textContent = `${statsText}共 ${filtered.length} 部`;
     }
 
     async function openMovie(id) {
