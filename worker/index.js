@@ -198,8 +198,8 @@ export default {
 
         const html = await searchResp.text();
         
-        // Parse 139 cloud links from HTML
-        const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[^\s<"']+)/g;
+        // Parse 139 cloud links from HTML - improved regex to handle URLs with ..
+        const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%]+)/g;
         const links = [...new Set(html.match(linkRegex) || [])];
 
         // Verify and add links
