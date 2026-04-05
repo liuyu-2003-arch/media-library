@@ -1267,18 +1267,7 @@
         document.getElementById('detailYear').textContent = m.release_date || m.year || '';
 
         // Ratings from multiple sources
-        const ratingsEl = document.getElementById('detailRatings');
-        let ratingsHtml = '';
-        if (m.rating) {
-          ratingsHtml += `<div class="detail-rating-item douban"><span class="source">豆瓣</span><span class="value">${m.rating}</span></div>`;
-        }
-        if (m.tmdb_rating) {
-          ratingsHtml += `<div class="detail-rating-item tmdb"><span class="source">TMDB</span><span class="value">${m.tmdb_rating}</span></div>`;
-        }
-        if (m.imdb_rating) {
-          ratingsHtml += `<div class="detail-rating-item imdb"><span class="source">IMDb</span><span class="value">${m.imdb_rating}</span></div>`;
-        }
-        ratingsEl.innerHTML = ratingsHtml;
+        // Ratings section hidden
 
         const genreTags = document.getElementById('detailGenreTags');
         if (m.genre) {
