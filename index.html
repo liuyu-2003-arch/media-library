@@ -727,20 +727,59 @@
       margin-top: 16px;
     }
 
-    .detail-cast-label {
-      font-size: 0.7rem;
-      color: var(--text-tertiary);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
+    .detail-crew-inline {
+      margin-top: 12px;
     }
 
-    .detail-cast-list-inline {
+    .detail-crew-list {
       display: flex;
-      gap: 12px;
+      gap: 16px;
       overflow-x: auto;
       padding-bottom: 8px;
       scrollbar-width: thin;
+      align-items: center;
+    }
+
+    .detail-crew-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 50px;
+      text-align: center;
+    }
+
+    .detail-crew-avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+      overflow: hidden;
+    }
+
+    .detail-crew-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .detail-crew-role {
+      font-size: 0.6rem;
+      color: var(--text-tertiary);
+      margin-bottom: 2px;
+    }
+
+    .detail-crew-name {
+      font-size: 0.65rem;
+      color: var(--text-secondary);
+      max-width: 50px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .detail-divider {
@@ -867,14 +906,8 @@
           </div>
           <div class="detail-ratings" id="detailRatings"></div>
           <div class="detail-genre" id="detailGenreTags"></div>
-          <div class="detail-director" id="detailDirectorSection" style="display:none;">
-            <div class="detail-director-label">导演</div>
-            <div class="detail-director-name" id="detailDirector"></div>
-          </div>
-          <!-- 演员列表 -->
-          <div class="detail-cast-inline" id="detailCastInline" style="display:none;">
-            <div class="detail-cast-label">主演</div>
-            <div class="detail-cast-list-inline" id="detailCastListInline"></div>
+          <div class="detail-crew-inline" id="detailCrewInline" style="display:none;">
+            <div class="detail-crew-list" id="detailCrewList"></div>
           </div>
         </div>
       </div>
@@ -1045,21 +1078,25 @@
           genreTags.innerHTML = '';
         }
 
-        // Director
-        const directorSection = document.getElementById('detailDirectorSection');
+        // Director & Cast - combined
+        const crewInline = document.getElementById('detailCrewInline');
+        const crewList = document.getElementById('detailCrewList');
+        let crewHtml = '';
+        
+        // Add director first
         if (m.director) {
-          document.getElementById('detailDirector').textContent = m.director;
-          directorSection.style.display = 'block';
-        } else {
-          directorSection.style.display = 'none';
+          const directorNames = m.director.split(', ');
+          for (const name of directorNames) {
+            crewHtml += `
+            <div class="detail-crew-item">
+              <div class="detail-crew-avatar">${name.charAt(0)}</div>
+              <div class="detail-crew-role">导演</div>
+              <div class="detail-crew-name">${name}</div>
+            </div>`;
+          }
         }
-
-        // Full intro
-        document.getElementById('detailFullIntro').textContent = m.intro || '暂无简介';
-
-        // Cast - inline with images
-        const castInline = document.getElementById('detailCastInline');
-        const castListInline = document.getElementById('detailCastListInline');
+        
+        // Add cast
         if (m.cast) {
           let castData = [];
           try {
@@ -1067,23 +1104,31 @@
           } catch(e) {}
           
           const castNames = m.cast.split(', ');
-          castListInline.innerHTML = castNames.slice(0, 8).map((name, i) => {
+          for (let i = 0; i < Math.min(castNames.length, 6); i++) {
+            const name = castNames[i];
             const avatar = castData[i];
             const initial = name.charAt(0);
             const imgHtml = avatar && avatar.profile_path 
               ? `<img src="https://image.tmdb.org/t/p/w92${avatar.profile_path}" alt="${name}" onerror="this.parentElement.textContent='${initial}'">` 
               : initial;
-            return `
-              <div class="detail-cast-item">
-                <div class="detail-cast-avatar">${imgHtml}</div>
-                <div class="detail-cast-name">${name}</div>
-              </div>
-            `;
-          }).join('');
-          castInline.style.display = 'block';
-        } else {
-          castInline.style.display = 'none';
+            crewHtml += `
+            <div class="detail-crew-item">
+              <div class="detail-crew-avatar">${imgHtml}</div>
+              <div class="detail-crew-role">主演</div>
+              <div class="detail-crew-name">${name}</div>
+            </div>`;
+          }
         }
+        
+        if (crewHtml) {
+          crewList.innerHTML = crewHtml;
+          crewInline.style.display = 'block';
+        } else {
+          crewInline.style.display = 'none';
+        }
+
+        // Full intro
+        document.getElementById('detailFullIntro').textContent = m.intro || '暂无简介';
 
         const linksEl = document.getElementById('detailLinks');
         let linksHtml = '';
