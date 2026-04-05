@@ -386,12 +386,6 @@
       font-weight: 500;
       opacity: 0.8;
     }
-    
-    /* 确保评分和年份在同一高度 */
-    .movie-rating-badge,
-    .movie-year-badge {
-      bottom: 8px !important;
-    }
 
     /* 电影标题 */
     .movie-card-title {
@@ -1266,11 +1260,11 @@
         if (m.rating) {
           ratingsHtml += `<div class="detail-rating-item douban"><span class="source">豆瓣</span><span class="value">${m.rating}</span></div>`;
         }
-        if (m.tmdbRating) {
-          ratingsHtml += `<div class="detail-rating-item tmdb"><span class="source">TMDB</span><span class="value">${m.tmdbRating}</span></div>`;
+        if (m.tmdb_rating) {
+          ratingsHtml += `<div class="detail-rating-item tmdb"><span class="source">TMDB</span><span class="value">${m.tmdb_rating}</span></div>`;
         }
-        if (m.imdbRating) {
-          ratingsHtml += `<div class="detail-rating-item imdb"><span class="source">IMDb</span><span class="value">${m.imdbRating}</span></div>`;
+        if (m.imdb_rating) {
+          ratingsHtml += `<div class="detail-rating-item imdb"><span class="source">IMDb</span><span class="value">${m.imdb_rating}</span></div>`;
         }
         ratingsEl.innerHTML = ratingsHtml;
 
@@ -1347,8 +1341,8 @@
         const linksEl = document.getElementById('detailLinks');
         let linksHtml = '';
 
-        if (m.doubanUrl) {
-          linksHtml += `<a href="${m.doubanUrl}" target="_blank" class="detail-link detail-link-douban">🍅 豆瓣</a>`;
+        if (m.douban_id) {
+          linksHtml += `<a href="https://movie.douban.com/subject/${m.douban_id}/" target="_blank" class="detail-link detail-link-douban">🍅 豆瓣</a>`;
         }
 
         if (m.tmdb_id) {
