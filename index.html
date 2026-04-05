@@ -226,6 +226,52 @@
       box-shadow: var(--shadow);
     }
 
+    .filter-dropdown {
+      position: absolute;
+      right: 10px;
+      top: 50px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      min-width: 280px;
+      box-shadow: var(--shadow);
+      z-index: 200;
+    }
+    .filter-section {
+      margin-bottom: 16px;
+    }
+    .filter-section:last-child {
+      margin-bottom: 0;
+    }
+    .filter-section-title {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin-bottom: 8px;
+    }
+    .filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .filter-tag {
+      padding: 4px 10px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-tag:hover {
+      border-color: var(--accent);
+    }
+    .filter-tag.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
     .search-box input {
       flex: 1;
       background: none;
@@ -1080,6 +1126,21 @@
           <button class="filter-btn active" data-filter="all">全部</button>
           <button class="filter-btn" data-filter="movie">电影</button>
           <button class="filter-btn" data-filter="tv">剧集</button>
+          <button class="filter-btn" onclick="toggleFilterMenu()">类型 ▾</button>
+        </div>
+        <div class="filter-dropdown" id="filterDropdown" style="display:none;">
+          <div class="filter-section">
+            <div class="filter-section-title">标签</div>
+            <div class="filter-tags" id="filterTags"></div>
+          </div>
+          <div class="filter-section">
+            <div class="filter-section-title">年份</div>
+            <div class="filter-tags" id="filterYears"></div>
+          </div>
+          <div class="filter-section">
+            <div class="filter-section-title">地区</div>
+            <div class="filter-tags" id="filterRegions"></div>
+          </div>
         </div>
         <div class="search-wrapper">
           <div class="search-icon" onclick="expandSearch()">🔍</div>
@@ -1114,6 +1175,10 @@
             <div class="detail-meta-item">
               <span class="label">上映</span>
               <span id="detailYear"></span>
+            </div>
+            <div class="detail-meta-item">
+              <span class="label">地区</span>
+              <span id="detailRegion"></span>
             </div>
           </div>
           <div class="detail-ratings" id="detailRatings"></div>
@@ -1208,6 +1273,43 @@
       renderMovies();
     }
 
+    function toggleFilterMenu() {
+      const dropdown = document.getElementById('filterDropdown');
+      if (dropdown.style.display === 'none') {
+        dropdown.style.display = 'block';
+        loadFilterOptions();
+      } else {
+        dropdown.style.display = 'none';
+      }
+    }
+
+    function loadFilterOptions() {
+      // Load genres
+      const genres = [...new Set(movies.map(m => m.genre).filter(Boolean).flatMap(g => g.split(' / '))];
+      document.getElementById('filterTags').innerHTML = genres.map(g => 
+        `<span class="filter-tag" onclick="applyFilter('genre','${g}')">${translateGenre(g)}</span>`
+      ).join('');
+      
+      // Load years
+      const years = [...new Set(movies.map(m => m.year).filter(Boolean))];
+      document.getElementById('filterYears').innerHTML = years.map(y => 
+        `<span class="filter-tag" onclick="applyFilter('year','${y}')">${y}</span>`
+      ).join('');
+      
+      // Load regions
+      const regions = [...new Set(movies.map(m => m.region).filter(Boolean))];
+      document.getElementById('filterRegions').innerHTML = regions.map(r => 
+        `<span class="filter-tag" onclick="applyFilter('region','${r}')">${r}</span>`
+      ).join('');
+    }
+
+    function applyFilter(type, value) {
+      document.getElementById('filterDropdown').style.display = 'none';
+      currentFilter = value;
+      history.pushState(null, '', `/?${type}=${encodeURIComponent(value)}`);
+      renderMovies();
+    }
+
     function filterByGenre(genre) {
       document.getElementById('homePage').style.display = 'block';
       document.getElementById('detailPage').classList.remove('active');
@@ -1297,6 +1399,7 @@
         document.getElementById('detailTitle').textContent = m.titleCn || m.title;
         document.getElementById('detailTitleEn').textContent = m.title_en || '';
         document.getElementById('detailYear').textContent = m.release_date || m.year || '';
+        document.getElementById('detailRegion').textContent = m.region || '';
 
         // Ratings from multiple sources
         // Ratings section hidden
