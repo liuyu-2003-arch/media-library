@@ -1388,14 +1388,10 @@
         const searchUrl = `https://91panta.cn/search?keyword=${searchTitle}`;
         
         resourcesEl.innerHTML = `
-          <div class="resources-header">
-            <span class="resources-count">在 91panta 搜索</span>
-            <button class="btn-refresh" onclick="refreshResources('${m.id}')">🔄 重新搜索</button>
-          </div>
           <div class="resource-item">
             <a href="${searchUrl}" target="_blank" class="resource-link">
               <span>🔍</span>
-              <span class="resource-url">点击搜索: ${m.title_cn || m.title}</span>
+              <span class="resource-url">在 91panta 搜索: ${m.title_cn || m.title}</span>
             </a>
           </div>
         `;
