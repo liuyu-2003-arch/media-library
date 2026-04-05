@@ -1267,6 +1267,7 @@
 
     function collapseSearch() {
       document.getElementById('searchExpanded').classList.remove('active');
+      document.getElementById('filters').classList.remove('search-active');
       document.querySelector('.search-icon').style.display = 'flex';
       renderMovies();
       window.scrollTo(0, 0);
