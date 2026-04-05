@@ -199,8 +199,9 @@
 
     .search-expanded {
       position: absolute;
-      right: 50px;
+      right: 40px;
       top: 50%;
+      transform: translateY(-50%) scale(0.9);
       width: 180px;
       opacity: 0;
       pointer-events: none;
@@ -211,6 +212,7 @@
     .search-expanded.active {
       opacity: 1;
       pointer-events: auto;
+      transform: translateY(-50%) scale(1);
     }
 
     .search-box {
