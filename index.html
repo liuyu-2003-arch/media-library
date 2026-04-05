@@ -1061,13 +1061,25 @@
         const castInline = document.getElementById('detailCastInline');
         const castListInline = document.getElementById('detailCastListInline');
         if (m.cast) {
-          const castNames = m.cast.split(', ').slice(0, 8);
-          castListInline.innerHTML = castNames.map(name => `
-            <div class="detail-cast-item">
-              <div class="detail-cast-avatar">${name.charAt(0)}</div>
-              <div class="detail-cast-name">${name}</div>
-            </div>
-          `).join('');
+          let castData = [];
+          try {
+            castData = m.cast_data ? JSON.parse(m.cast_data) : [];
+          } catch(e) {}
+          
+          const castNames = m.cast.split(', ');
+          castListInline.innerHTML = castNames.slice(0, 8).map((name, i) => {
+            const avatar = castData[i];
+            const initial = name.charAt(0);
+            const imgHtml = avatar && avatar.profile_path 
+              ? `<img src="https://image.tmdb.org/t/p/w92${avatar.profile_path}" alt="${name}" onerror="this.parentElement.textContent='${initial}'">` 
+              : initial;
+            return `
+              <div class="detail-cast-item">
+                <div class="detail-cast-avatar">${imgHtml}</div>
+                <div class="detail-cast-name">${name}</div>
+              </div>
+            `;
+          }).join('');
           castInline.style.display = 'block';
         } else {
           castInline.style.display = 'none';
