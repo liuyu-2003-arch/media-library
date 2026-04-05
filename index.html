@@ -146,7 +146,7 @@
 
     .filters.search-active {
       opacity: 1;
-      transform: translateX(-280px);
+      transform: translateX(-200px);
       pointer-events: auto;
     }
 
@@ -866,6 +866,23 @@
       font-size: 0.85rem;
       margin-bottom: 4px;
       overflow: hidden;
+      cursor: pointer;
+      position: relative;
+    }
+    .detail-crew-avatar:hover::after {
+      content: attr(data-name);
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.9);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      z-index: 100;
+      pointer-events: none;
     }
 
     .detail-crew-avatar img {
@@ -1314,7 +1331,7 @@
               : `<span style="font-size:1.2rem">🎬</span>`;
             crewHtml += `
             <div class="detail-crew-item">
-              <div class="detail-crew-avatar">${imgHtml}</div>
+              <div class="detail-crew-avatar" data-name="${name}">${imgHtml}</div>
               <div class="detail-crew-role">导演</div>
               <div class="detail-crew-name">${name}</div>
             </div>`;
@@ -1338,7 +1355,7 @@
               : initial;
             crewHtml += `
             <div class="detail-crew-item">
-              <div class="detail-crew-avatar">${imgHtml}</div>
+              <div class="detail-crew-avatar" data-name="${name}">${imgHtml}</div>
               <div class="detail-crew-role">主演</div>
               <div class="detail-crew-name">${name}</div>
             </div>`;
