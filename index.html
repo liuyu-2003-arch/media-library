@@ -1273,21 +1273,12 @@
       renderMovies();
     }
 
-    function toggleFilterMenu() {
-      const dropdown = document.getElementById('filterDropdown');
-      if (dropdown.style.display === 'none') {
-        dropdown.style.display = 'block';
-        loadFilterOptions();
-      } else {
+    // toggleFilterMenu disabled else {
         dropdown.style.display = 'none';
       }
     }
 
-    function loadFilterOptions() {
-      // Load genres
-      const genres = [...new Set(movies.map(m => m.genre).filter(Boolean).flatMap(g => g.split(' / '));
-      document.getElementById('filterTags').innerHTML = genres.map(g => 
-        `<span class="filter-tag" onclick="applyFilter('genre','${g}')">${translateGenre(g)}</span>`
+    // loadFilterOptions disabled')">${translateGenre(g)}</span>`
       ).join('');
       
       // Load years
@@ -1303,10 +1294,7 @@
       ).join('');
     }
 
-    function applyFilter(type, value) {
-      document.getElementById('filterDropdown').style.display = 'none';
-      currentFilter = value;
-      history.pushState(null, '', `/?${type}=${encodeURIComponent(value)}`);
+    // applyFilter disabled=${encodeURIComponent(value)}`);
       renderMovies();
     }
 
