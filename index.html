@@ -1092,7 +1092,7 @@
           <div class="detail-title-en" id="detailTitleEn"></div>
           <div class="detail-meta-row">
             <div class="detail-meta-item">
-              <span class="label">年份</span>
+              <span class="label">上映</span>
               <span id="detailYear"></span>
             </div>
           </div>
@@ -1264,7 +1264,7 @@
 
         document.getElementById('detailTitle').textContent = m.titleCn || m.title;
         document.getElementById('detailTitleEn').textContent = m.title_en || '';
-        document.getElementById('detailYear').textContent = m.year || '';
+        document.getElementById('detailYear').textContent = m.release_date || m.year || '';
 
         // Ratings from multiple sources
         const ratingsEl = document.getElementById('detailRatings');
