@@ -1140,6 +1140,17 @@
     let currentFilter = 'all';
     let currentMovie = null;
 
+    // 年份颜色映射
+    const yearColors = {
+      '2026': { bg: 'rgba(102, 126, 234, 0.9)', border: 'rgba(102, 126, 234, 0.5)' },
+      '2025': { bg: 'rgba(16, 185, 129, 0.9)', border: 'rgba(16, 185, 129, 0.5)' },
+      '2024': { bg: 'rgba(245, 158, 11, 0.9)', border: 'rgba(245, 158, 11, 0.5)' },
+      '2023': { bg: 'rgba(239, 68, 68, 0.9)', border: 'rgba(239, 68, 68, 0.5)' },
+    };
+    function getYearColor(year) {
+      return yearColors[year] || { bg: 'rgba(100, 100, 100, 0.9)', border: 'rgba(100, 100, 100, 0.5)' };
+    }
+
     // 主题
     function getTheme() {
       return localStorage.getItem('theme') || 'light';
@@ -1225,7 +1236,7 @@
             <span class="tag ${m.type === 'movie' ? 'tag-movie' : 'tag-tv'}">${m.type === 'movie' ? '电影' : '剧集'}</span>
           </div>
           ${parseFloat(m.tmdb_rating) > 0 ? `<div class="movie-rating-badge"><span class="star">★</span>${m.tmdb_rating}</div>` : ''}
-          ${m.year ? `<div class="movie-year-badge">${m.year}</div>` : ''}
+          ${m.year ? `<div class="movie-year-badge" style="background:${getYearColor(m.year).bg};border-color:${getYearColor(m.year).border}">${m.year}</div>` : ''}
           <div class="movie-card-title">${m.titleCn || m.title}</div>
         </a>
       `).join('');
