@@ -15,6 +15,7 @@ CF_TOKEN="cfut_h4fG1Oteo850bmdOr737ENdyTQU5oJlLaRD7q8zGa1a4edd6"
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] 开始拉取豆瓣热门电影..."
 
 # 获取豆瓣榜单页面
+# 豆瓣explore页面是JS渲染的，用chart榜单代替
 HTML=$(curl -s "https://movie.douban.com/chart" \
   -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36")
 
