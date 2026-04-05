@@ -1285,7 +1285,7 @@
 
     function loadFilterOptions() {
       // Load genres
-      const genres = [...new Set(movies.map(m => m.genre).filter(Boolean).flatMap(g => g.split(' / '))];
+      const genres = [...new Set(movies.map(m => m.genre).filter(Boolean).flatMap(g => g.split(' / '));
       document.getElementById('filterTags').innerHTML = genres.map(g => 
         `<span class="filter-tag" onclick="applyFilter('genre','${g}')">${translateGenre(g)}</span>`
       ).join('');
