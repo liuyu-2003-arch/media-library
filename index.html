@@ -722,6 +722,36 @@
       margin: 20px 0;
     }
 
+    .detail-ratings {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .detail-rating-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.8rem;
+    }
+
+    .detail-rating-item .source {
+      color: var(--text-tertiary);
+    }
+
+    .detail-rating-item .value {
+      font-weight: 600;
+    }
+
+    .detail-rating-item.douban .value { color: #00b43c; }
+    .detail-rating-item.tmdb .value { color: #87a3e8; }
+    .detail-rating-item.imdb .value { color: #f4a523; }
+
     /* 滚动条 */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -804,21 +834,17 @@
               <span id="detailYear"></span>
             </div>
             <div class="detail-meta-item">
-              <span class="label">评分</span>
-              <span class="detail-rating" id="detailRating"></span>
-            </div>
-            <div class="detail-meta-item">
               <span class="label">类型</span>
               <span id="detailGenre"></span>
             </div>
           </div>
+          <div class="detail-ratings" id="detailRatings"></div>
           <div class="detail-genre" id="detailGenreTags"></div>
           <div class="detail-divider"></div>
           <div class="detail-director" id="detailDirectorSection" style="display:none;">
             <div class="detail-director-label">导演</div>
             <div class="detail-director-name" id="detailDirector"></div>
           </div>
-          <p class="detail-intro" id="detailIntro"></p>
         </div>
       </div>
       
@@ -971,8 +997,21 @@
 
         document.getElementById('detailTitle').textContent = m.titleCn || m.title;
         document.getElementById('detailYear').textContent = m.year || '';
-        document.getElementById('detailRating').innerHTML = m.rating ? `<span class="star">★</span> ${m.rating}` : '';
         document.getElementById('detailGenre').textContent = m.genre || '';
+
+        // Ratings from multiple sources
+        const ratingsEl = document.getElementById('detailRatings');
+        let ratingsHtml = '';
+        if (m.rating) {
+          ratingsHtml += `<div class="detail-rating-item douban"><span class="source">豆瓣</span><span class="value">${m.rating}</span></div>`;
+        }
+        if (m.tmdbRating) {
+          ratingsHtml += `<div class="detail-rating-item tmdb"><span class="source">TMDB</span><span class="value">${m.tmdbRating}</span></div>`;
+        }
+        if (m.imdbRating) {
+          ratingsHtml += `<div class="detail-rating-item imdb"><span class="source">IMDb</span><span class="value">${m.imdbRating}</span></div>`;
+        }
+        ratingsEl.innerHTML = ratingsHtml;
 
         const genreTags = document.getElementById('detailGenreTags');
         if (m.genre) {
@@ -989,10 +1028,6 @@
         } else {
           directorSection.style.display = 'none';
         }
-
-        // Short intro
-        const shortIntro = m.intro ? (m.intro.length > 80 ? m.intro.substring(0, 80) + '...' : m.intro) : '';
-        document.getElementById('detailIntro').textContent = shortIntro;
 
         // Full intro
         document.getElementById('detailFullIntro').textContent = m.intro || '暂无简介';
