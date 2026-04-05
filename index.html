@@ -1383,13 +1383,15 @@
         linksEl.innerHTML = linksHtml;
 
         const resourcesEl = document.getElementById('detailResources');
-        if (m.resources && m.resources.length > 0) {
+        // Filter out invalid links (ending with ..)
+        const validResources = (m.resources || []).filter(r => !r.url || !r.url.endsWith('..'));
+        if (validResources.length > 0) {
           resourcesEl.innerHTML = `
             <div class="resources-header">
-              <span class="resources-count">${m.resources.length} 个链接</span>
+              <span class="resources-count">${validResources.length} 个链接</span>
               <button class="btn-refresh" onclick="refreshResources('${m.id}')">🔄 重新搜索</button>
             </div>
-            ${m.resources.map(r => `
+            ${validResources.map(r => `
               <div class="resource-item" data-resource-id="${r.id}">
                 <a href="${r.url}" target="_blank" class="resource-link">
                   <span>📁</span>

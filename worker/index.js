@@ -202,9 +202,12 @@ export default {
         const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%]+)/g;
         const links = [...new Set(html.match(linkRegex) || [])];
 
+        // Filter out invalid links (ending with ..)
+        const validLinks = links.filter(link => !link.endsWith('..'));
+        
         // Verify and add links
         const added = [];
-        for (const link of links) {
+        for (const link of validLinks) {
           const existing = await env.DB.prepare(
             'SELECT * FROM resources WHERE movie_id = ? AND url = ?'
           ).bind(movieId, link).first();
