@@ -705,6 +705,13 @@
       justify-content: center;
       font-size: 1rem;
       margin-bottom: 6px;
+      overflow: hidden;
+    }
+
+    .detail-cast-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .detail-cast-name {
@@ -714,6 +721,26 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+
+    .detail-cast-inline {
+      margin-top: 16px;
+    }
+
+    .detail-cast-label {
+      font-size: 0.7rem;
+      color: var(--text-tertiary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .detail-cast-list-inline {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: thin;
     }
 
     .detail-divider {
@@ -840,18 +867,16 @@
           </div>
           <div class="detail-ratings" id="detailRatings"></div>
           <div class="detail-genre" id="detailGenreTags"></div>
-          <div class="detail-divider"></div>
           <div class="detail-director" id="detailDirectorSection" style="display:none;">
             <div class="detail-director-label">导演</div>
             <div class="detail-director-name" id="detailDirector"></div>
           </div>
+          <!-- 演员列表 -->
+          <div class="detail-cast-inline" id="detailCastInline" style="display:none;">
+            <div class="detail-cast-label">主演</div>
+            <div class="detail-cast-list-inline" id="detailCastListInline"></div>
+          </div>
         </div>
-      </div>
-      
-      <!-- 演员 -->
-      <div class="detail-section" id="detailCastSection" style="display:none;">
-        <div class="detail-section-title">主演</div>
-        <div class="detail-cast-list" id="detailCast"></div>
       </div>
 
       <div class="detail-links" id="detailLinks"></div>
@@ -1032,20 +1057,20 @@
         // Full intro
         document.getElementById('detailFullIntro').textContent = m.intro || '暂无简介';
 
-        // Cast
-        const castSection = document.getElementById('detailCastSection');
-        const castList = document.getElementById('detailCast');
+        // Cast - inline with images
+        const castInline = document.getElementById('detailCastInline');
+        const castListInline = document.getElementById('detailCastListInline');
         if (m.cast) {
           const castNames = m.cast.split(', ').slice(0, 8);
-          castList.innerHTML = castNames.map(name => `
+          castListInline.innerHTML = castNames.map(name => `
             <div class="detail-cast-item">
               <div class="detail-cast-avatar">${name.charAt(0)}</div>
               <div class="detail-cast-name">${name}</div>
             </div>
           `).join('');
-          castSection.style.display = 'block';
+          castInline.style.display = 'block';
         } else {
-          castSection.style.display = 'none';
+          castInline.style.display = 'none';
         }
 
         const linksEl = document.getElementById('detailLinks');
