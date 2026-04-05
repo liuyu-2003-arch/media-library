@@ -199,13 +199,14 @@
 
     .search-expanded {
       position: absolute;
-      right: 0;
+      right: 50px;
       top: 50%;
       transform: translateY(-50%) scale(0.9);
       width: 240px;
       opacity: 0;
       pointer-events: none;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 10;
     }
 
     .search-expanded.active {
@@ -262,10 +263,6 @@
       cursor: pointer;
       font-size: 0.9rem;
       transition: all 0.25s ease;
-    }
-
-    .theme-toggle:hover {
-      border-color: var(--accent);
     }
 
     /* 影视网格 */
@@ -1077,7 +1074,6 @@
             </div>
           </div>
         </div>
-        <button class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</button>
       </div>
     </div>
 
@@ -1173,22 +1169,6 @@
       'Action / Thriller': '动作 / 惊悚',
     };
     function translateGenre(g) { return genreCN[g] || g; }
-
-    // 主题
-    function getTheme() {
-      return localStorage.getItem('theme') || 'light';
-    }
-
-    function setTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);
-      document.getElementById('themeToggle').textContent = theme === 'dark' ? '☀️' : '🌙';
-    }
-
-    function toggleTheme() {
-      const current = getTheme();
-      setTheme(current === 'dark' ? 'light' : 'dark');
-    }
 
     function showToast(msg) {
       const t = document.getElementById('toast');
