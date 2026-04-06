@@ -1315,6 +1315,19 @@
       renderMovies();
       window.scrollTo(0, 0);
     }
+
+    function toggleFilterMenu() {
+      const dropdown = document.getElementById('filterDropdown');
+      dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function filterByGenre(genre) {
+      currentFilter = genre;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('filterDropdown').style.display = 'none';
+      renderMovies();
+    }
+
     function goHome() {
       currentFilter = 'all';
       document.getElementById('homePage').style.display = 'block';
@@ -1330,9 +1343,41 @@
         const data = await response.json();
         movies = data.movies || [];
         renderMovies();
+        populateFilters();
       } catch (e) {
         console.error('加载数据失败:', e);
       }
+    }
+
+    function populateFilters() {
+      const genres = new Set();
+      const years = new Set();
+      movies.forEach(m => {
+        if (m.genre) {
+          m.genre.split(/[,/]/).forEach(g => {
+            const trimmed = g.trim();
+            if (trimmed) genres.add(trimmed);
+          });
+        }
+        if (m.year) years.add(m.year);
+      });
+
+      const filterTags = document.getElementById('filterTags');
+      filterTags.innerHTML = Array.from(genres).map(g => {
+        const cn = translateGenre(g);
+        return `<span class="filter-tag" onclick="filterByGenre('${g}')">${cn}</span>`;
+      }).join('');
+
+      const filterYears = document.getElementById('filterYears');
+      filterYears.innerHTML = Array.from(years).sort().reverse().map(y => {
+        return `<span class="filter-tag" onclick="filterByYear('${y}')">${y}</span>`;
+      }).join('');
+    }
+
+    function filterByYear(year) {
+      currentFilter = 'year:' + year;
+      document.getElementById('filterDropdown').style.display = 'none';
+      renderMovies();
     }
 
     function renderMovies() {
@@ -1342,8 +1387,13 @@
       let filtered = movies.filter(m => {
         if (currentFilter === 'movie' && m.type !== 'movie') return false;
         if (currentFilter === 'tv' && m.type !== 'tv') return false;
-        if (currentFilter !== 'all' && !currentFilter.startsWith('movie') && !currentFilter.startsWith('tv') && !m.genre.includes(currentFilter)) return false;
-        if (search && !(m.title_cn || m.titleCn || '').toLowerCase().includes(search) && !m.title.toLowerCase().includes(search)) return false;
+        if (currentFilter.startsWith('year:')) {
+          const year = currentFilter.replace('year:', '');
+          if (m.year !== year) return false;
+        } else if (currentFilter !== 'all' && !currentFilter.startsWith('movie') && !currentFilter.startsWith('tv')) {
+          if (!m.genre.includes(currentFilter)) return false;
+        }
+        if (search && !(getChineseTitle(m) || '').toLowerCase().includes(search) && !m.title.toLowerCase().includes(search)) return false;
         return true;
       });
 
