@@ -1363,7 +1363,7 @@
 
         const genreTags = document.getElementById('detailGenreTags');
         if (m.genre) {
-          genreTags.innerHTML = m.genre.split(' / ').map(g => {
+          genreTags.innerHTML = m.genre.split(',').map(g => {
             const cn = translateGenre(g.trim());
             return `<a href="#" class="detail-genre-tag" onclick="filterByGenre('${g.trim()}'); return false;">${cn}</a>`;
           }).join('');
