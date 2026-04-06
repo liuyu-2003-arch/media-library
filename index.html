@@ -946,15 +946,35 @@
     }
 
     .detail-crew-list {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    @media (min-width: 640px) {
+      .detail-crew-list {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px 16px;
+      }
     }
 
     .detail-crew-item {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-width: 50px;
-      text-align: center;
+      flex-direction: row;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .detail-crew-role {
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      min-width: 32px;
+    }
+
+    .detail-crew-name {
+      color: var(--text-primary);
+      font-size: 0.85rem;
     }
 
     .detail-crew-avatar {
@@ -1240,11 +1260,11 @@
             </div>
           </div>
           <div class="detail-ratings" id="detailRatings"></div>
+          <div class="detail-links" id="detailLinks"></div>
           <div class="detail-genre" id="detailGenreTags"></div>
           <div class="detail-crew-inline" id="detailCrewInline" style="display:none;">
             <div class="detail-crew-list" id="detailCrewList"></div>
           </div>
-          <div class="detail-links" id="detailLinks"></div>
         </div>
       </div>
       
@@ -1600,11 +1620,11 @@
         let crewHtml = '';
         
         if (m.director) {
-          crewHtml += `<div style="margin-bottom:6px;"><span style="color:var(--text-tertiary);font-size:0.75rem;">导演：</span><span style="color:var(--text-primary);font-size:0.85rem;">${m.director}</span></div>`;
+          crewHtml += `<div class="detail-crew-item"><span class="detail-crew-role">导演</span><span class="detail-crew-name">${m.director}</span></div>`;
         }
         
         if (m.cast) {
-          crewHtml += `<div><span style="color:var(--text-tertiary);font-size:0.75rem;">主演：</span><span style="color:var(--text-primary);font-size:0.85rem;">${m.cast}</span></div>`;
+          crewHtml += `<div class="detail-crew-item"><span class="detail-crew-role">主演</span><span class="detail-crew-name">${m.cast}</span></div>`;
         }
         
         if (crewHtml) {
