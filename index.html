@@ -1468,24 +1468,21 @@
                 if (otherSeason) allSeasons.push({ id: other.id, season: otherSeason });
               });
               
-              if (allSeasons.length > 1) {
-                const seasonOrder = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
-                allSeasons.sort((a, b) => {
-                  const aIdx = seasonOrder.indexOf(a.season);
-                  const bIdx = seasonOrder.indexOf(b.season);
-                  return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
-                });
-                
-                let seasonHtml = '';
-                allSeasons.forEach(s => {
-                  const isActive = s.id === m.id;
-                  seasonHtml += `<a href="/movie/${s.id}" class="season-tag ${isActive ? 'active' : ''}">第${s.season}季</a>`;
-                });
-                seasonSelector.innerHTML = seasonHtml;
-                seasonSection.style.display = 'block';
-              } else {
-                seasonSection.style.display = 'none';
-              }
+              // Sort by season number
+              const seasonOrder = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+              allSeasons.sort((a, b) => {
+                const aIdx = seasonOrder.indexOf(a.season);
+                const bIdx = seasonOrder.indexOf(b.season);
+                return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
+              });
+              
+              let seasonHtml = '';
+              allSeasons.forEach(s => {
+                const isActive = s.id === m.id;
+                seasonHtml += `<a href="/movie/${s.id}" class="season-tag ${isActive ? 'active' : ''}">第${s.season}季</a>`;
+              });
+              seasonSelector.innerHTML = seasonHtml;
+              seasonSection.style.display = 'block';
             })
             .catch(() => {
               seasonSection.style.display = 'none';
