@@ -1219,10 +1219,9 @@
           <div class="detail-crew-inline" id="detailCrewInline" style="display:none;">
             <div class="detail-crew-list" id="detailCrewList"></div>
           </div>
+          <div class="detail-links" id="detailLinks"></div>
         </div>
       </div>
-
-      <div class="detail-links" id="detailLinks" style="display:none;"></div>
       
       <div class="detail-divider"></div>
       
@@ -1406,57 +1405,17 @@
           genreTags.innerHTML = '';
         }
 
-        // Director & Cast - combined
+        // Director & Cast - simplified text only
         const crewInline = document.getElementById('detailCrewInline');
         const crewList = document.getElementById('detailCrewList');
         let crewHtml = '';
         
-        // Add director first (try to get avatar from director_data)
         if (m.director) {
-          let directorData = [];
-          try {
-            directorData = m.director_data ? JSON.parse(m.director_data) : [];
-          } catch(e) {}
-          
-          const directorNames = m.director.split(', ');
-          for (let i = 0; i < directorNames.length; i++) {
-            const name = directorNames[i];
-            const director = directorData[i];
-            const initial = name.charAt(0);
-            const imgHtml = director && director.profile_path 
-              ? `<img src="https://image.tmdb.org/t/p/w92${director.profile_path}" alt="${name}" onerror="this.parentElement.textContent='${initial}'">` 
-              : `<span style="font-size:1.2rem">🎬</span>`;
-            crewHtml += `
-            <div class="detail-crew-item">
-              <div class="detail-crew-avatar" data-name="${name}">${imgHtml}</div>
-              <div class="detail-crew-role">导演</div>
-              <div class="detail-crew-name">${name}</div>
-            </div>`;
-          }
+          crewHtml += `<div style="margin-bottom:8px;"><span style="color:var(--text-tertiary);font-size:0.75rem;">导演：</span><span style="color:var(--text-primary);font-size:0.85rem;">${m.director}</span></div>`;
         }
         
-        // Add cast
         if (m.cast) {
-          let castData = [];
-          try {
-            castData = m.cast_data ? JSON.parse(m.cast_data) : [];
-          } catch(e) {}
-          
-          const castNames = m.cast.split(', ');
-          for (let i = 0; i < Math.min(castNames.length, 6); i++) {
-            const name = castNames[i];
-            const avatar = castData[i];
-            const initial = name.charAt(0);
-            const imgHtml = avatar && avatar.profile_path 
-              ? `<img src="https://image.tmdb.org/t/p/w92${avatar.profile_path}" alt="${name}" onerror="this.parentElement.textContent='${initial}'">` 
-              : initial;
-            crewHtml += `
-            <div class="detail-crew-item">
-              <div class="detail-crew-avatar" data-name="${name}">${imgHtml}</div>
-              <div class="detail-crew-role">主演</div>
-              <div class="detail-crew-name">${name}</div>
-            </div>`;
-          }
+          crewHtml += `<div><span style="color:var(--text-tertiary);font-size:0.75rem;">主演：</span><span style="color:var(--text-primary);font-size:0.85rem;">${m.cast}</span></div>`;
         }
         
         if (crewHtml) {
