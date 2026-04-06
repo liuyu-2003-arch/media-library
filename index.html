@@ -1554,7 +1554,13 @@
         }
 
         document.getElementById('detailTitle').textContent = getChineseTitle(m).replace(/第[一二三四五六七八九十]+季/, '').trim();
-        document.getElementById('detailTitleEn').textContent = m.title_en || '';
+        const titleEnEl = document.getElementById('detailTitleEn');
+        if (m.title_en) {
+          titleEnEl.textContent = m.title_en;
+          titleEnEl.style.display = 'block';
+        } else {
+          titleEnEl.style.display = 'none';
+        }
         document.getElementById('detailYear').textContent = m.release_date || m.year || '';
         document.getElementById('detailRegion').textContent = m.region || '';
 
