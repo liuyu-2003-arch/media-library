@@ -1222,7 +1222,7 @@
         </div>
       </div>
 
-      <div class="detail-links" id="detailLinks"></div>
+      <div class="detail-links" id="detailLinks" style="display:none;"></div>
       
       <div class="detail-divider"></div>
       
@@ -1362,7 +1362,7 @@
           </div>
           ${parseFloat(m.tmdb_rating) > 0 ? `<div class="movie-rating-badge"><span class="star">★</span>${m.tmdb_rating}</div>` : ''}
           ${m.year ? `<div class="movie-year-badge" style="background:${getYearColor(m.year).bg};border-color:${getYearColor(m.year).border}">${m.year}</div>` : ''}
-          <div class="movie-card-title">${m.title_cn || m.titleCn || m.title}</div>
+          <div class="movie-card-title">${(m.title_cn || m.titleCn || m.title).replace(/第[一二三四五六七八九十]+季/, '').trim()}</div>
         </a>
       `).join('');
 
@@ -1489,32 +1489,42 @@
         const seasonSection = document.getElementById('seasonSelectorSection');
         const seasonSelector = document.getElementById('seasonSelector');
         const cleanTitle = (m.title_cn || m.titleCn || m.title).replace(/第[一二三四五六七八九十]+季/, '').trim();
-        const currentSeason = m.title_cn.match(/第([一二三四五六七八九十]+)季/)?.[1] || '';
+        const currentSeason = m.title_cn.match(/第([一二三四五六七八九十]+)季/)?.[1] || '1';
         
         // Fetch all movies to find related seasons
-        seasonSelector.innerHTML = '<span style="color:var(--text-tertiary);font-size:0.8rem;">加载季数...</span>';
         fetch(`${API_BASE}/api/movies`)
           .then(r => r.json())
           .then(data => {
+            const allSeasons = [{ id: m.id, season: currentSeason }];
             const relatedMovies = (data.movies || []).filter(other => {
               if (other.id === m.id) return false;
               const otherClean = (other.title_cn || other.titleCn || other.title).replace(/第[一二三四五六七八九十]+季/, '').trim();
               return otherClean === cleanTitle && other.type === m.type;
             });
             
-            if (relatedMovies.length === 0) {
-              seasonSection.style.display = 'none';
-            } else {
-              let seasonHtml = '';
-              if (currentSeason) {
-                seasonHtml += `<a href="/movie/${m.id}" class="season-tag active">第${currentSeason}季</a>`;
-              }
-              relatedMovies.forEach(other => {
-                const otherSeason = other.title_cn.match(/第([一二三四五六七八九十]+)季/)?.[1] || '';
-                seasonHtml += `<a href="/movie/${other.id}" class="season-tag">第${otherSeason}季</a>`;
+            relatedMovies.forEach(other => {
+              const otherSeason = other.title_cn.match(/第([一二三四五六七八九十]+)季/)?.[1] || '';
+              if (otherSeason) allSeasons.push({ id: other.id, season: otherSeason });
+            });
+            
+            // Sort by season number
+            const seasonOrder = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+            allSeasons.sort((a, b) => {
+              const aIdx = seasonOrder.indexOf(a.season);
+              const bIdx = seasonOrder.indexOf(b.season);
+              return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
+            });
+            
+            if (allSeasons.length > 0) {
+              let seasonHtml = `<span style="color:var(--text-tertiary);font-size:0.75rem;margin-right:8px;">共${allSeasons.length}季</span>`;
+              allSeasons.forEach(s => {
+                const isActive = s.id === m.id;
+                seasonHtml += `<a href="/movie/${s.id}" class="season-tag ${isActive ? 'active' : ''}">第${s.season}季</a>`;
               });
               seasonSelector.innerHTML = seasonHtml;
               seasonSection.style.display = 'block';
+            } else {
+              seasonSection.style.display = 'none';
             }
           })
           .catch(() => {
