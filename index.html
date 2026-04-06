@@ -1496,7 +1496,14 @@
         } else if (currentFilter !== 'all' && !currentFilter.startsWith('movie') && !currentFilter.startsWith('tv')) {
           if (!m.genre.includes(currentFilter)) return false;
         }
-        if (search && !(getChineseTitle(m) || '').toLowerCase().includes(search) && !m.title.toLowerCase().includes(search)) return false;
+        if (search) {
+          const chineseTitle = getChineseTitle(m);
+          const englishTitle = m.title || '';
+          const searchLower = search.toLowerCase();
+          if (!chineseTitle.toLowerCase().includes(searchLower) && !englishTitle.toLowerCase().includes(searchLower)) {
+            return false;
+          }
+        }
         return true;
       });
 
