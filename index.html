@@ -1453,15 +1453,30 @@
         linksEl.innerHTML = linksHtml;
 
         const resourcesEl = document.getElementById('detailResources');
-        // Generate 91panta search link
+        // Generate search links
         const searchTitle = encodeURIComponent(m.title_cn || m.title);
-        const searchUrl = `https://91panta.cn/search?keyword=${searchTitle}`;
+        const googleSearchTitle = m.title_cn || m.title;
+        const searchUrl91 = `https://91panta.cn/search?keyword=${searchTitle}`;
+        const google139 = `https://www.google.com/search?q=site:yun.139.com/shareweb+${encodeURIComponent(googleSearchTitle)}`;
+        const googleAli = `https://www.google.com/search?q=site:www.aliyundrive.com+${encodeURIComponent(googleSearchTitle)}`;
         
         resourcesEl.innerHTML = `
           <div class="resource-item">
-            <a href="${searchUrl}" target="_blank" class="resource-link">
+            <a href="${searchUrl91}" target="_blank" class="resource-link">
               <span>🔍</span>
-              <span class="resource-url">在 91panta 搜索: ${m.title_cn || m.title}</span>
+              <span class="resource-url">91panta 搜索: ${googleSearchTitle}</span>
+            </a>
+          </div>
+          <div class="resource-item">
+            <a href="${google139}" target="_blank" class="resource-link">
+              <span>🔍</span>
+              <span class="resource-url">Google 139云搜索: ${googleSearchTitle}</span>
+            </a>
+          </div>
+          <div class="resource-item">
+            <a href="${googleAli}" target="_blank" class="resource-link">
+              <span>🔍</span>
+              <span class="resource-url">Google 阿里云盘搜索: ${googleSearchTitle}</span>
             </a>
           </div>
         `;
