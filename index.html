@@ -1155,7 +1155,7 @@
           <button class="filter-btn active" data-filter="all">全部</button>
           <button class="filter-btn" data-filter="movie">电影</button>
           <button class="filter-btn" data-filter="tv">剧集</button>
-          <button class="filter-btn" onclick="toggleFilterMenu()">类型 ▾</button>
+          <button class="filter-btn" id="genreFilterBtn" onclick="toggleFilterMenu()">类型 ▾</button>
         </div>
         <div class="filter-dropdown" id="filterDropdown" style="display:none;">
           <div class="filter-section">
@@ -1324,7 +1324,14 @@
     function filterByGenre(genre) {
       currentFilter = genre;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      const genreBtn = document.getElementById('genreFilterBtn');
+      genreBtn.classList.add('active');
+      genreBtn.textContent = translateGenre(genre);
       document.getElementById('filterDropdown').style.display = 'none';
+      // If on detail page, go home first
+      if (document.getElementById('detailPage').classList.contains('active')) {
+        goHome();
+      }
       renderMovies();
     }
 
