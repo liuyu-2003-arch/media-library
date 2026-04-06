@@ -1226,7 +1226,6 @@
       <div class="detail-divider"></div>
       
       <div class="detail-section" id="seasonSelectorSection" style="display:none;">
-        <div class="detail-section-title">选季</div>
         <div class="season-selector" id="seasonSelector"></div>
       </div>
       
@@ -1405,13 +1404,13 @@
           genreTags.innerHTML = '';
         }
 
-        // Director & Cast - simplified text only
+        // Director & Cast - simplified text only, separate lines
         const crewInline = document.getElementById('detailCrewInline');
         const crewList = document.getElementById('detailCrewList');
         let crewHtml = '';
         
         if (m.director) {
-          crewHtml += `<div style="margin-bottom:8px;"><span style="color:var(--text-tertiary);font-size:0.75rem;">导演：</span><span style="color:var(--text-primary);font-size:0.85rem;">${m.director}</span></div>`;
+          crewHtml += `<div style="margin-bottom:6px;"><span style="color:var(--text-tertiary);font-size:0.75rem;">导演：</span><span style="color:var(--text-primary);font-size:0.85rem;">${m.director}</span></div>`;
         }
         
         if (m.cast) {
@@ -1444,51 +1443,54 @@
           introEl.textContent = m.intro || '暂无简介';
         }
 
-        // Season selector - find related seasons
+        // Season selector - only for TV shows
         const seasonSection = document.getElementById('seasonSelectorSection');
         const seasonSelector = document.getElementById('seasonSelector');
-        const cleanTitle = (m.title_cn || m.titleCn || m.title).replace(/第[一二三四五六七八九十]+季/, '').trim();
-        const currentSeason = m.title_cn.match(/第([一二三四五六七八九十]+)季/)?.[1] || '1';
         
-        // Fetch all movies to find related seasons
-        fetch(`${API_BASE}/api/movies`)
-          .then(r => r.json())
-          .then(data => {
-            const allSeasons = [{ id: m.id, season: currentSeason }];
-            const relatedMovies = (data.movies || []).filter(other => {
-              if (other.id === m.id) return false;
-              const otherClean = (other.title_cn || other.titleCn || other.title).replace(/第[一二三四五六七八九十]+季/, '').trim();
-              return otherClean === cleanTitle && other.type === m.type;
-            });
-            
-            relatedMovies.forEach(other => {
-              const otherSeason = other.title_cn.match(/第([一二三四五六七八九十]+)季/)?.[1] || '';
-              if (otherSeason) allSeasons.push({ id: other.id, season: otherSeason });
-            });
-            
-            // Sort by season number
-            const seasonOrder = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
-            allSeasons.sort((a, b) => {
-              const aIdx = seasonOrder.indexOf(a.season);
-              const bIdx = seasonOrder.indexOf(b.season);
-              return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
-            });
-            
-            if (allSeasons.length > 0) {
-              let seasonHtml = `<span style="color:var(--text-tertiary);font-size:0.75rem;margin-right:8px;">共${allSeasons.length}季</span>`;
-              allSeasons.forEach(s => {
-                const isActive = s.id === m.id;
-                seasonHtml += `<a href="/movie/${s.id}" class="season-tag ${isActive ? 'active' : ''}">第${s.season}季</a>`;
+        if (m.type !== 'tv') {
+          seasonSection.style.display = 'none';
+        } else {
+          const cleanTitle = (m.title_cn || m.titleCn || m.title).replace(/第[一二三四五六七八九十]+季/, '').trim();
+          const currentSeason = m.title_cn.match(/第([一二三四五六七八九十]+)季/)?.[1] || '1';
+          
+          fetch(`${API_BASE}/api/movies`)
+            .then(r => r.json())
+            .then(data => {
+              const allSeasons = [{ id: m.id, season: currentSeason }];
+              const relatedMovies = (data.movies || []).filter(other => {
+                if (other.id === m.id) return false;
+                const otherClean = (other.title_cn || other.titleCn || other.title).replace(/第[一二三四五六七八九十]+季/, '').trim();
+                return otherClean === cleanTitle && other.type === m.type;
               });
-              seasonSelector.innerHTML = seasonHtml;
-              seasonSection.style.display = 'block';
-            } else {
+              
+              relatedMovies.forEach(other => {
+                const otherSeason = other.title_cn.match(/第([一二三四五六七八九十]+)季/)?.[1] || '';
+                if (otherSeason) allSeasons.push({ id: other.id, season: otherSeason });
+              });
+              
+              if (allSeasons.length > 1) {
+                const seasonOrder = ['一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+                allSeasons.sort((a, b) => {
+                  const aIdx = seasonOrder.indexOf(a.season);
+                  const bIdx = seasonOrder.indexOf(b.season);
+                  return (aIdx === -1 ? 99 : aIdx) - (bIdx === -1 ? 99 : bIdx);
+                });
+                
+                let seasonHtml = '';
+                allSeasons.forEach(s => {
+                  const isActive = s.id === m.id;
+                  seasonHtml += `<a href="/movie/${s.id}" class="season-tag ${isActive ? 'active' : ''}">第${s.season}季</a>`;
+                });
+                seasonSelector.innerHTML = seasonHtml;
+                seasonSection.style.display = 'block';
+              } else {
+                seasonSection.style.display = 'none';
+              }
+            })
+            .catch(() => {
               seasonSection.style.display = 'none';
-            }
-          })
-          .catch(() => {
-            seasonSection.style.display = 'none';
-          });
+            });
+        }
 
         const linksEl = document.getElementById('detailLinks');
         let linksHtml = '';
