@@ -434,17 +434,18 @@
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
 
-    /* 电影标题 */
+    /* 电影标题 - 固定高度统一对齐 */
     .movie-card-title {
-      padding: 10px 6px 8px;
+      padding: 10px 6px;
       font-size: 0.75rem;
       color: var(--text-primary);
       text-align: center;
       line-height: 1.3;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+      height: 2.6em;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* 统计 */
