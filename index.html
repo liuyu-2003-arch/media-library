@@ -1503,7 +1503,10 @@
         }
         if (search) {
           const chineseTitle = getChineseTitle(m);
-          if (!chineseTitle.toLowerCase().includes(search.toLowerCase())) {
+          const englishTitle = m.title || '';
+          const searchLower = search.toLowerCase();
+          // 同时匹配中文标题和英文标题
+          if (!chineseTitle.toLowerCase().includes(searchLower) && !englishTitle.toLowerCase().includes(searchLower)) {
             return false;
           }
         }
