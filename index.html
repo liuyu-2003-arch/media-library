@@ -1199,11 +1199,18 @@
       </div>
       <div class="topbar-right">
         <div class="filters" id="filters">
-          <button class="filter-btn active" data-filter="all">全部</button>
-          <button class="filter-btn" data-filter="movie">电影</button>
-          <button class="filter-btn" data-filter="tv">剧集</button>
           <div class="filter-dropdown-wrapper">
-            <button class="filter-btn" id="genreFilterBtn" onclick="toggleGenreDropdown()">类型 ▾</button>
+            <button class="filter-btn active" id="typeFilterBtn" onclick="toggleTypeDropdown()">全部 ▾</button>
+            <div class="filter-dropdown type-dropdown" id="typeDropdown">
+              <div class="filter-tags">
+                <span class="filter-tag" onclick="filterByType('all')">全部</span>
+                <span class="filter-tag" onclick="filterByType('movie')">电影</span>
+                <span class="filter-tag" onclick="filterByType('tv')">剧集</span>
+              </div>
+            </div>
+          </div>
+          <div class="filter-dropdown-wrapper">
+            <button class="filter-btn" id="genreFilterBtn" onclick="toggleGenreDropdown()">标签 ▾</button>
             <div class="filter-dropdown genre-dropdown" id="genreDropdown">
               <div class="filter-tags" id="filterTags"></div>
             </div>
@@ -1365,29 +1372,58 @@
       window.scrollTo(0, 0);
     }
 
+    function toggleTypeDropdown() {
+      const dropdown = document.getElementById('typeDropdown');
+      const genreDropdown = document.getElementById('genreDropdown');
+      const yearDropdown = document.getElementById('yearDropdown');
+      genreDropdown.classList.remove('active');
+      yearDropdown.classList.remove('active');
+      dropdown.classList.toggle('active');
+    }
+
     function toggleGenreDropdown() {
       const dropdown = document.getElementById('genreDropdown');
+      const typeDropdown = document.getElementById('typeDropdown');
       const yearDropdown = document.getElementById('yearDropdown');
+      typeDropdown.classList.remove('active');
       yearDropdown.classList.remove('active');
       dropdown.classList.toggle('active');
     }
 
     function toggleYearDropdown() {
       const dropdown = document.getElementById('yearDropdown');
+      const typeDropdown = document.getElementById('typeDropdown');
       const genreDropdown = document.getElementById('genreDropdown');
+      typeDropdown.classList.remove('active');
       genreDropdown.classList.remove('active');
       dropdown.classList.toggle('active');
     }
 
+    function filterByType(type) {
+      // 存储当前筛选状态
+      if (!window.currentType) window.currentType = 'all';
+      if (!window.currentGenre) window.currentGenre = 'all';
+      if (!window.currentYear) window.currentYear = 'all';
+      
+      window.currentType = type;
+      const typeBtn = document.getElementById('typeFilterBtn');
+      if (type === 'all') {
+        typeBtn.innerHTML = '全部 ▾';
+      } else if (type === 'movie') {
+        typeBtn.innerHTML = '电影 ▾';
+      } else {
+        typeBtn.innerHTML = '剧集 ▾';
+      }
+      document.getElementById('typeDropdown').classList.remove('active');
+      renderMovies();
+    }
+
     function filterByGenre(genre) {
-      currentFilter = genre;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      window.currentGenre = genre;
       const genreBtn = document.getElementById('genreFilterBtn');
       if (genre === 'all') {
-        genreBtn.innerHTML = '类型 ▾';
-        document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+        genreBtn.innerHTML = '标签 ▾';
       } else {
-        genreBtn.classList.add('active');
         genreBtn.innerHTML = translateGenre(genre) + ' ▾';
       }
       document.getElementById('genreDropdown').classList.remove('active');
@@ -1398,32 +1434,24 @@
     }
 
     function filterByYear(year) {
-      if (year === 'all') {
-        currentFilter = 'all';
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
-        document.getElementById('yearFilterBtn').innerHTML = '年份 ▾';
-        document.getElementById('yearDropdown').classList.remove('active');
-        renderMovies();
-        return;
-      }
-      currentFilter = 'year:' + year;
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      window.currentYear = year;
       const yearBtn = document.getElementById('yearFilterBtn');
-      yearBtn.classList.add('active');
-      yearBtn.innerHTML = year + ' ▾';
+      if (year === 'all') {
+        yearBtn.innerHTML = '年份 ▾';
+      } else {
+        yearBtn.innerHTML = year + ' ▾';
+      }
       document.getElementById('yearDropdown').classList.remove('active');
       renderMovies();
     }
 
-    function clearFilters() {
-      currentFilter = 'all';
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
-      document.getElementById('genreFilterBtn').innerHTML = '类型 ▾';
+    function clearAllFilters() {
+      window.currentType = 'all';
+      window.currentGenre = 'all';
+      window.currentYear = 'all';
+      document.getElementById('typeFilterBtn').innerHTML = '全部 ▾';
+      document.getElementById('genreFilterBtn').innerHTML = '标签 ▾';
       document.getElementById('yearFilterBtn').innerHTML = '年份 ▾';
-      document.getElementById('genreDropdown').classList.remove('active');
-      document.getElementById('yearDropdown').classList.remove('active');
       document.getElementById('searchInput').value = '';
       renderMovies();
     }
@@ -1477,36 +1505,30 @@
     }
 
     function clearFilters() {
-      currentFilter = 'all';
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
-      document.getElementById('genreFilterBtn').innerHTML = '类型 ▾';
-      document.getElementById('yearFilterBtn').innerHTML = '年份 ▾';
-      document.getElementById('genreDropdown').classList.remove('active');
-      document.getElementById('yearDropdown').classList.remove('active');
-      document.getElementById('searchInput').value = '';
-      renderMovies();
+      clearAllFilters();
     }
 
     function renderMovies() {
       const grid = document.getElementById('moviesGrid');
       const search = document.getElementById('searchInput').value.toLowerCase();
       
+      // 初始化筛选状态
+      if (!window.currentType) window.currentType = 'all';
+      if (!window.currentGenre) window.currentGenre = 'all';
+      if (!window.currentYear) window.currentYear = 'all';
+      
       let filtered = movies.filter(m => {
-        if (currentFilter === 'movie' && m.type !== 'movie') return false;
-        if (currentFilter === 'tv' && m.type !== 'tv') return false;
-        if (currentFilter.startsWith('year:')) {
-          const year = currentFilter.replace('year:', '');
-          if (m.year !== year) return false;
-        } else if (currentFilter !== 'all' && !currentFilter.startsWith('movie') && !currentFilter.startsWith('tv')) {
-          if (!m.genre.includes(currentFilter)) return false;
-        }
+        // 类型筛选
+        if (window.currentType !== 'all' && m.type !== window.currentType) return false;
+        // 标签筛选
+        if (window.currentGenre !== 'all' && !m.genre.includes(window.currentGenre)) return false;
+        // 年份筛选
+        if (window.currentYear !== 'all' && m.year !== window.currentYear) return false;
+        // 搜索
         if (search) {
           const chineseTitle = getChineseTitle(m);
           const englishTitle = m.title || '';
-          const searchLower = search.toLowerCase();
-          // 同时匹配中文标题和英文标题
-          if (!chineseTitle.toLowerCase().includes(searchLower) && !englishTitle.toLowerCase().includes(searchLower)) {
+          if (!chineseTitle.toLowerCase().includes(search) && !englishTitle.toLowerCase().includes(search)) {
             return false;
           }
         }
@@ -1537,7 +1559,11 @@
         </a>
       `).join('');
 
-      let statsText = currentFilter === 'all' ? '' : `筛选: ${translateGenre(currentFilter)} | `;
+      let filters = [];
+      if (window.currentType !== 'all') filters.push(window.currentType === 'movie' ? '电影' : '剧集');
+      if (window.currentGenre !== 'all') filters.push(translateGenre(window.currentGenre));
+      if (window.currentYear !== 'all') filters.push(window.currentYear);
+      let statsText = filters.length > 0 ? '筛选: ' + filters.join(' + ') + ' | ' : '';
       document.getElementById('stats').textContent = `${statsText}共 ${filtered.length} 部`;
     }
 
@@ -1815,18 +1841,10 @@
       }
     }
 
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        renderMovies();
-      });
-    });
-
     // 点击空白处关闭下拉菜单
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.filter-dropdown-wrapper')) {
+        document.getElementById('typeDropdown').classList.remove('active');
         document.getElementById('genreDropdown').classList.remove('active');
         document.getElementById('yearDropdown').classList.remove('active');
       }
