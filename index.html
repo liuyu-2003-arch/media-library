@@ -1383,7 +1383,7 @@
         document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
       } else {
         genreBtn.classList.add('active');
-        genreBtn.textContent = translateGenre(genre);
+        genreBtn.innerHTML = translateGenre(genre) + ' ▾';
       }
       document.getElementById('genreDropdown').classList.remove('active');
       if (document.getElementById('detailPage').classList.contains('active')) {
@@ -1393,11 +1393,20 @@
     }
 
     function filterByYear(year) {
+      if (year === 'all') {
+        currentFilter = 'all';
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+        document.getElementById('yearFilterBtn').innerHTML = '年份 ▾';
+        document.getElementById('yearDropdown').classList.remove('active');
+        renderMovies();
+        return;
+      }
       currentFilter = 'year:' + year;
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
       const yearBtn = document.getElementById('yearFilterBtn');
       yearBtn.classList.add('active');
-      yearBtn.textContent = year;
+      yearBtn.innerHTML = year + ' ▾';
       document.getElementById('yearDropdown').classList.remove('active');
       renderMovies();
     }
@@ -1456,7 +1465,7 @@
         }).join('');
 
       const filterYears = document.getElementById('filterYears');
-      filterYears.innerHTML = `<span class="filter-tag" onclick="filterByGenre('all')">全部</span>` +
+      filterYears.innerHTML = `<span class="filter-tag" onclick="filterByYear('all')">全部</span>` +
         Array.from(years).sort().reverse().map(y => {
           return `<span class="filter-tag" onclick="filterByYear('${y}')">${y}</span>`;
         }).join('');
