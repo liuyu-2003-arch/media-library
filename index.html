@@ -948,28 +948,28 @@
     .detail-crew-list {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
+      margin-bottom: 12px;
     }
 
     @media (min-width: 640px) {
       .detail-crew-list {
         flex-direction: row;
         flex-wrap: wrap;
-        gap: 8px 16px;
+        gap: 0 20px;
       }
     }
 
     .detail-crew-item {
       display: flex;
       flex-direction: row;
-      gap: 8px;
-      align-items: flex-start;
+      gap: 6px;
+      align-items: baseline;
     }
 
     .detail-crew-role {
       color: var(--text-tertiary);
       font-size: 0.75rem;
-      min-width: 32px;
     }
 
     .detail-crew-name {
@@ -1260,11 +1260,11 @@
             </div>
           </div>
           <div class="detail-ratings" id="detailRatings"></div>
-          <div class="detail-links" id="detailLinks"></div>
-          <div class="detail-genre" id="detailGenreTags"></div>
           <div class="detail-crew-inline" id="detailCrewInline" style="display:none;">
             <div class="detail-crew-list" id="detailCrewList"></div>
           </div>
+          <div class="detail-links" id="detailLinks"></div>
+          <div class="detail-genre" id="detailGenreTags"></div>
         </div>
       </div>
       
