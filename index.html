@@ -1498,9 +1498,7 @@
         }
         if (search) {
           const chineseTitle = getChineseTitle(m);
-          const englishTitle = m.title || '';
-          const searchLower = search.toLowerCase();
-          if (!chineseTitle.toLowerCase().includes(searchLower) && !englishTitle.toLowerCase().includes(searchLower)) {
+          if (!chineseTitle.toLowerCase().includes(search.toLowerCase())) {
             return false;
           }
         }
@@ -1555,8 +1553,9 @@
 
         document.getElementById('detailTitle').textContent = getChineseTitle(m).replace(/第[一二三四五六七八九十]+季/, '').trim();
         const titleEnEl = document.getElementById('detailTitleEn');
-        if (m.title_en) {
-          titleEnEl.textContent = m.title_en;
+        const englishTitle = m.title_en || (m.title !== getChineseTitle(m) ? m.title : '');
+        if (englishTitle) {
+          titleEnEl.textContent = englishTitle;
           titleEnEl.style.display = 'block';
         } else {
           titleEnEl.style.display = 'none';
