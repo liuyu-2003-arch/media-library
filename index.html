@@ -1303,7 +1303,7 @@
         if (currentFilter === 'movie' && m.type !== 'movie') return false;
         if (currentFilter === 'tv' && m.type !== 'tv') return false;
         if (currentFilter !== 'all' && !currentFilter.startsWith('movie') && !currentFilter.startsWith('tv') && !m.genre.includes(currentFilter)) return false;
-        if (search && !(m.titleCn || '').toLowerCase().includes(search) && !m.title.toLowerCase().includes(search)) return false;
+        if (search && !(m.title_cn || m.titleCn || '').toLowerCase().includes(search) && !m.title.toLowerCase().includes(search)) return false;
         return true;
       });
 
@@ -1327,7 +1327,7 @@
           </div>
           ${parseFloat(m.tmdb_rating) > 0 ? `<div class="movie-rating-badge"><span class="star">★</span>${m.tmdb_rating}</div>` : ''}
           ${m.year ? `<div class="movie-year-badge" style="background:${getYearColor(m.year).bg};border-color:${getYearColor(m.year).border}">${m.year}</div>` : ''}
-          <div class="movie-card-title">${m.titleCn || m.title}</div>
+          <div class="movie-card-title">${m.title_cn || m.titleCn || m.title}</div>
         </a>
       `).join('');
 
@@ -1353,7 +1353,7 @@
           document.getElementById('detailPoster').style.display = 'none';
         }
 
-        document.getElementById('detailTitle').textContent = m.titleCn || m.title;
+        document.getElementById('detailTitle').textContent = m.title_cn || m.titleCn || m.title;
         document.getElementById('detailTitleEn').textContent = m.title_en || '';
         document.getElementById('detailYear').textContent = m.release_date || m.year || '';
         document.getElementById('detailRegion').textContent = m.region || '';
