@@ -1156,6 +1156,7 @@
           <button class="filter-btn" data-filter="movie">电影</button>
           <button class="filter-btn" data-filter="tv">剧集</button>
           <button class="filter-btn" id="genreFilterBtn" onclick="toggleFilterMenu()">类型 ▾</button>
+          <button class="filter-btn" id="yearFilterBtn" onclick="toggleFilterMenu()">年份 ▾</button>
         </div>
         <div class="filter-dropdown" id="filterDropdown" style="display:none;">
           <div class="filter-section">
@@ -1383,6 +1384,10 @@
 
     function filterByYear(year) {
       currentFilter = 'year:' + year;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      const yearBtn = document.getElementById('yearFilterBtn');
+      yearBtn.classList.add('active');
+      yearBtn.textContent = year;
       document.getElementById('filterDropdown').style.display = 'none';
       renderMovies();
     }
