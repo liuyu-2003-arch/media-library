@@ -5,6 +5,7 @@
  * - GET /api/movies - List all movies
  * - POST /api/movies - Add movie from Douban URL (fetches data from TMDB)
  * - GET /api/movies/:id - Get movie details
+ * - POST /api/movies/:id/refresh - Refresh movie data from Douban (Chinese content)
  * - POST /api/movies/:id/resources - Search and add resources
  * - DELETE /api/movies/:id - Delete movie
  */
@@ -187,6 +188,39 @@ export default {
         const id = path.match(/^\/api\/movies\/([^/]+)$/)[1];
         await env.DB.prepare('DELETE FROM movies WHERE id = ?').bind(id).run();
         return Response.json({ status: 'deleted' }, { headers: corsHeaders });
+      }
+
+      // Route: POST /api/movies/:id/refresh - Refresh from Douban for Chinese content
+      if (path.match(/^\/api\/movies\/([^/]+)\/refresh$/) && request.method === 'POST') {
+        const id = path.match(/^\/api\/movies\/([^/]+)\/refresh$/)[1];
+        const movie = await env.DB.prepare('SELECT * FROM movies WHERE id = ?').bind(id).first();
+        
+        if (!movie) {
+          return Response.json({ error: 'Movie not found' }, { status: 404 });
+        }
+
+        // Fetch from Douban API
+        const doubanApiUrl = `https://api.douban.com/v2/movie/subject/${id}`;
+        const doubanResp = await fetch(doubanApiUrl, {
+          headers: { 'User-Agent': 'Mozilla/5.0' }
+        });
+
+        if (!doubanResp.ok) {
+          return Response.json({ error: 'Failed to fetch from Douban' }, { status: 502 });
+        }
+
+        const doubanData = await doubanResp.json();
+
+        // Update movie with Chinese content
+        const titleCN = doubanData.title || movie.title_cn || movie.title;
+        const intro = doubanData.summary || movie.intro || '';
+
+        await env.DB.prepare(`
+          UPDATE movies SET title_cn = ?, intro = ? WHERE id = ?
+        `).bind(titleCN, intro, id).run();
+
+        const updated = await env.DB.prepare('SELECT * FROM movies WHERE id = ?').bind(id).first();
+        return Response.json({ movie: toCamelCase(updated), status: 'refreshed' }, { headers: corsHeaders });
       }
 
       // Route: POST /api/movies/:id/resources - Search and add resources
