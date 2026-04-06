@@ -1457,11 +1457,10 @@
     }
 
     function goHome() {
-      currentFilter = 'all';
+      clearAllFilters();
       document.getElementById('homePage').style.display = 'block';
       document.getElementById('detailPage').classList.remove('active');
       history.pushState(null, '', '/');
-      renderMovies();
       window.scrollTo(0, 0);
     }
 
