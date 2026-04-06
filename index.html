@@ -1171,6 +1171,9 @@
             <div class="filter-section-title">地区</div>
             <div class="filter-tags" id="filterRegions"></div>
           </div>
+          <div class="filter-section">
+            <button class="filter-tag" style="background:var(--bg-secondary);width:100%;text-align:center;" onclick="clearFilters()">清除筛选</button>
+          </div>
         </div>
         <div class="search-wrapper">
           <div class="search-icon" onclick="expandSearch()">🔍</div>
@@ -1389,6 +1392,17 @@
       yearBtn.classList.add('active');
       yearBtn.textContent = year;
       document.getElementById('filterDropdown').style.display = 'none';
+      renderMovies();
+    }
+
+    function clearFilters() {
+      currentFilter = 'all';
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.filter-btn[data-filter="all"]').classList.add('active');
+      document.getElementById('genreFilterBtn').textContent = '类型 ▾';
+      document.getElementById('yearFilterBtn').textContent = '年份 ▾';
+      document.getElementById('filterDropdown').style.display = 'none';
+      document.getElementById('searchInput').value = '';
       renderMovies();
     }
 
