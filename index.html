@@ -1392,9 +1392,11 @@
 
         const genreTags = document.getElementById('detailGenreTags');
         if (m.genre) {
-          genreTags.innerHTML = m.genre.split(',').map(g => {
-            const cn = translateGenre(g.trim());
-            return `<a href="#" class="detail-genre-tag" onclick="filterByGenre('${g.trim()}'); return false;">${cn}</a>`;
+          // Split by comma or slash
+          const genres = m.genre.split(/[,/]/).map(g => g.trim()).filter(g => g);
+          genreTags.innerHTML = genres.map(g => {
+            const cn = translateGenre(g);
+            return `<a href="#" class="detail-genre-tag" onclick="filterByGenre('${g}'); return false;">${cn}</a>`;
           }).join('');
         } else {
           genreTags.innerHTML = '';
@@ -1621,7 +1623,7 @@
 
     function handleRoute() {
       const path = location.pathname;
-      const match = path.match(/^\/movie\/(\d+)$/);
+      const match = path.match(/^\/movie\/(.+)$/);
       if (match) {
         openMovie(match[1]);
       } else {
