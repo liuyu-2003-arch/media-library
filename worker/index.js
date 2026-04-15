@@ -232,7 +232,9 @@ export default {
         }
 
         const mainTitle = movie.title_cn || movie.title;
+        const searchQuery = movie.year ? `${mainTitle} ${movie.year}` : mainTitle;
         const searchTitles = [...new Set([
+          searchQuery,
           mainTitle,
           movie.title,
           movie.original_title
@@ -288,52 +290,20 @@ export default {
           return [...links139, ...linksAli];
         }
 
-        for (const query of searchTitles) {
-          const searchUrl = `${PANTALIST_URL}?keyword=${encodeURIComponent(query)}`;
-
-          try {
-            const searchResp = await fetchWithTimeout(searchUrl, {
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-              }
-            });
-
-            if (searchResp && searchResp.ok) {
-              const html = await searchResp.text();
-              const links = extractLinks(html);
-
-              for (const link of links) {
-                if (!seenLinks.has(link)) {
-                  seenLinks.add(link);
-                  const isValid = await validateLink(link);
-                  if (isValid) {
-                    const source = link.includes('139.com') ? '91panta_139' : '91panta_ali';
-                    allFoundLinks.push({ url: link, source, query, valid: true });
-                  }
-                }
-              }
-
-              if (links.length > 0 && !sources.includes('91panta')) {
-                sources.push('91panta');
-              }
-            }
-          } catch (e) {
-            console.error(`91panta search failed for "${query}":`, e.message);
-          }
-
-          await new Promise(r => setTimeout(r, 100));
-        }
-
         const googleSearches = [
-          { url: `https://www.google.com/search?q=site:yun.139.com+${encodeURIComponent(mainTitle)}`, source: 'google_139' },
-          { url: `https://www.google.com/search?q=site:aliyundrive.com+${encodeURIComponent(mainTitle)}`, source: 'google_ali' }
+          { url: `https://www.google.com/search?q=site:yun.139.com+"${encodeURIComponent(mainTitle)}"`, source: 'google_139' },
+          { url: `https://www.google.com/search?q=site:caiyun.139.com+"${encodeURIComponent(mainTitle)}"`, source: 'google_caiyun' },
+          { url: `https://www.google.com/search?q=site:aliyundrive.com+"${encodeURIComponent(mainTitle)}"`, source: 'google_ali' },
+          { url: `https://www.google.com/search?q=site:alipan.com+"${encodeURIComponent(mainTitle)}"`, source: 'google_alipan' }
         ];
 
         for (const gs of googleSearches) {
           try {
             const googleResp = await fetchWithTimeout(gs.url, {
               headers: {
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml',
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
               }
             });
 
@@ -358,6 +328,7 @@ export default {
           } catch (e) {
             console.error(`${gs.source} search failed:`, e.message);
           }
+          await new Promise(r => setTimeout(r, 300));
         }
 
         const added = [];

@@ -1745,7 +1745,10 @@
         }
 
         function renderSearchButtons() {
-          const encodedTitle = encodeURIComponent(searchTitle);
+          const movieName = m.title || '';
+          const year = m.year || '';
+          const searchQuery = year ? `${movieName} ${year}` : movieName;
+          const encodedQuery = encodeURIComponent(searchQuery);
           const expiredHtml = expiredCount > 0 ? `
             <div style="padding:8px 12px;background:rgba(239,68,68,0.1);border-radius:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
               <span style="color:#ef4444;font-size:0.8rem;">⚠️ ${expiredCount} 个失效资源</span>
@@ -1760,18 +1763,21 @@
                 🔍 搜索资源
               </button>
             </div>
+            <div style="margin-top:8px;padding:8px;background:var(--bg-card);border-radius:8px;font-size:0.75rem;color:var(--text-secondary);">
+              搜索关键词: ${searchQuery}
+            </div>
             <div class="resource-external-links" style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
-              <a href="https://91panta.cn/search?keyword=${encodedTitle}" target="_blank" class="resource-link" style="font-size:0.75rem;">
+              <a href="https://91panta.cn/search?keyword=${encodedQuery}" target="_blank" class="resource-link" style="font-size:0.75rem;">
                 <span>🌐</span>
                 <span class="resource-url">91panta 搜索</span>
               </a>
-              <a href="https://www.google.com/search?q=site:yun.139.com/shareweb+${encodedTitle}" target="_blank" class="resource-link" style="font-size:0.75rem;">
+              <a href="https://www.google.com/search?q=%22${encodedQuery}%22+yun.139.com" target="_blank" class="resource-link" style="font-size:0.75rem;">
                 <span>🌐</span>
-                <span class="resource-url">Google 139云</span>
+                <span class="resource-url">Google 139云盘</span>
               </a>
-              <a href="https://www.google.com/search?q=site:www.aliyundrive.com+${encodedTitle}" target="_blank" class="resource-link" style="font-size:0.75rem;">
+              <a href="https://www.google.com/search?q=%22${encodedQuery}%22+aliyundrive.com" target="_blank" class="resource-link" style="font-size:0.75rem;">
                 <span>🌐</span>
-                <span class="resource-url">阿里云盘</span>
+                <span class="resource-url">Google 阿里云盘</span>
               </a>
             </div>
           `;
