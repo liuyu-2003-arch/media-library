@@ -261,6 +261,32 @@ export default {
 
         async function validateLink(url) {
           try {
+            if (url.includes('139.com')) {
+              const resp = await fetchWithTimeout(url, {
+                method: 'GET',
+                headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
+                redirect: 'follow'
+              }, 8000);
+              if (!resp || !resp.ok) return false;
+              const html = await resp.text();
+              const expiredPatterns = [
+                '分享已被取消',
+                '分享已过期',
+                '链接不存在',
+                '该文件已被删除',
+                '已过期',
+                '已被取消',
+                '无法查看',
+                'error',
+                '404'
+              ];
+              const lowerHtml = html.toLowerCase();
+              for (const pattern of expiredPatterns) {
+                if (lowerHtml.includes(pattern.toLowerCase())) return false;
+              }
+              if (html.includes('shareweb') || html.includes('fileId') || html.includes('fileName')) return true;
+              return html.length > 5000;
+            }
             const resp = await fetchWithTimeout(url, {
               method: 'HEAD',
               headers: { 'User-Agent': 'Mozilla/5.0' },
@@ -376,7 +402,6 @@ export default {
         }, { headers: corsHeaders });
       }
 
-      // Route: POST /api/movies/:id/resources/validate - Validate existing resources
       if (path.match(/^\/api\/movies\/([^/]+)\/resources\/validate$/) && request.method === 'POST') {
         const movieId = path.match(/^\/api\/movies\/([^/]+)\/resources\/validate$/)[1];
 
@@ -384,8 +409,27 @@ export default {
           'SELECT * FROM resources WHERE movie_id = ?'
         ).bind(movieId).all();
 
-        async function validateLink(url) {
+        async function validateExistingLink(url) {
           try {
+            if (url.includes('139.com')) {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 8000);
+              const resp = await fetch(url, {
+                method: 'GET',
+                headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
+                redirect: 'follow',
+                signal: controller.signal
+              });
+              clearTimeout(timeoutId);
+              if (!resp || !resp.ok) return false;
+              const html = await resp.text();
+              const expiredPatterns = ['分享已被取消', '分享已过期', '链接不存在', '该文件已被删除', '已过期', '已被取消', '无法查看'];
+              const lowerHtml = html.toLowerCase();
+              for (const pattern of expiredPatterns) {
+                if (lowerHtml.includes(pattern.toLowerCase())) return false;
+              }
+              return html.length > 5000;
+            }
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
             const resp = await fetch(url, {
@@ -403,13 +447,13 @@ export default {
 
         const results = [];
         for (const resource of resources) {
-          const isValid = await validateLink(resource.url);
+          const isValid = await validateExistingLink(resource.url);
           const status = isValid ? 'valid' : 'expired';
           await env.DB.prepare(
             'UPDATE resources SET status = ?, last_checked = datetime(\'now\') WHERE id = ?'
           ).bind(status, resource.id).run();
           results.push({ id: resource.id, url: resource.url, status });
-          await new Promise(r => setTimeout(r, 200));
+          await new Promise(r => setTimeout(r, 300));
         }
 
         return Response.json({
