@@ -302,9 +302,10 @@ export default {
         }
 
         function extractLinks(html) {
-          const linkRegex139 = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%]+)/g;
+          const linkRegex139 = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%?]+)/g;
           const linkRegexAli = /(https?:\/\/(?:www\.)?(?:aliyundrive\.com|alipan\.com)\/s\/[\w\-]+)/g;
-          const links139 = (html.match(linkRegex139) || []).filter(l => !l.endsWith('..') && l.length < 500);
+          let links139 = (html.match(linkRegex139) || []).filter(l => !l.endsWith('..') && l.length < 500);
+          links139 = links139.map(l => l.endsWith('.') ? l.replace(/\.*$/, '') : l);
           const linksAli = (html.match(linkRegexAli) || []).filter(l => l.length < 200);
           return [...links139, ...linksAli];
         }
@@ -474,6 +475,24 @@ export default {
       // Health check
       if (path === '/api/health') {
         return Response.json({ status: 'ok' }, { headers: corsHeaders });
+      }
+
+      if (path === '/api/migrate' && request.method === 'POST') {
+        try {
+          await env.DB.prepare(`ALTER TABLE resources ADD COLUMN status TEXT DEFAULT 'unknown'`).run();
+        } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+        try {
+          await env.DB.prepare(`ALTER TABLE resources ADD COLUMN last_checked TEXT`).run();
+        } catch (e) { if (!e.message.includes('duplicate column')) throw e; }
+        return Response.json({ status: 'migrated' }, { headers: corsHeaders });
+      }
+
+      if (path.match(/^\/api\/movies\/([^/]+)\/resources\/expired$/) && request.method === 'DELETE') {
+        const movieId = path.match(/^\/api\/movies\/([^/]+)\/resources\/expired$/)[1];
+        const result = await env.DB.prepare(
+          `DELETE FROM resources WHERE movie_id = ? AND status = 'expired'`
+        ).bind(movieId).run();
+        return Response.json({ deleted: result.changes }, { headers: corsHeaders });
       }
 
       return Response.json({ error: 'Not found' }, { status: 404 });
