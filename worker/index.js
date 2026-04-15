@@ -223,55 +223,120 @@ export default {
         return Response.json({ movie: toCamelCase(updated), status: 'refreshed' }, { headers: corsHeaders });
       }
 
-      // Route: POST /api/movies/:id/resources - Search and add resources
       if (path.match(/^\/api\/movies\/([^/]+)\/resources$/) && request.method === 'POST') {
         const movieId = path.match(/^\/api\/movies\/([^/]+)\/resources$/)[1];
         const movie = await env.DB.prepare('SELECT * FROM movies WHERE id = ?').bind(movieId).first();
-        
+
         if (!movie) {
           return Response.json({ error: 'Movie not found' }, { status: 404 });
         }
 
-        // Search 91panta for resources
-        const searchQuery = encodeURIComponent(movie.title_cn || movie.title);
-        const searchUrl = `${PANTALIST_URL}?keyword=${searchQuery}`;
-        
-        const searchResp = await fetch(searchUrl, {
-          headers: { 
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
-          }
-        });
+        const searchTitles = [
+          movie.title_cn || movie.title,
+          movie.title,
+          movie.original_title || ''
+        ].filter(t => t && t !== (movie.title_cn || movie.title)).slice(0, 3);
 
-        const html = await searchResp.text();
-        
-        // Parse 139 cloud links from HTML - improved regex to handle URLs with ..
-        const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%]+)/g;
-        const links = [...new Set(html.match(linkRegex) || [])];
+        const seenLinks = new Set();
+        const { results: existingResources } = await env.DB.prepare(
+          'SELECT url FROM resources WHERE movie_id = ?'
+        ).bind(movieId).all();
+        existingResources.forEach(r => seenLinks.add(r.url));
 
-        // Filter out invalid links (ending with ..)
-        const validLinks = links.filter(link => !link.endsWith('..'));
-        
-        // Verify and add links
-        const added = [];
-        for (const link of validLinks) {
-          const existing = await env.DB.prepare(
-            'SELECT * FROM resources WHERE movie_id = ? AND url = ?'
-          ).bind(movieId, link).first();
+        const allFoundLinks = [];
+        const sources = [];
 
-          if (!existing) {
-            await env.DB.prepare(`
-              INSERT INTO resources (movie_id, url, source, verified)
-              VALUES (?, ?, '91panta', 1)
-            `).bind(movieId, link).run();
-            added.push(link);
+        async function fetchWithTimeout(url, options = {}, timeout = 8000) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), timeout);
+          try {
+            const resp = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timeoutId);
+            return resp;
+          } catch (e) {
+            clearTimeout(timeoutId);
+            return null;
           }
         }
 
-        return Response.json({ 
+        for (const query of searchTitles) {
+          const searchUrl = `${PANTALIST_URL}?keyword=${encodeURIComponent(query)}`;
+
+          try {
+            const searchResp = await fetchWithTimeout(searchUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+              }
+            });
+
+            if (searchResp && searchResp.ok) {
+              const html = await searchResp.text();
+              const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%]+)/g;
+              let links = (html.match(linkRegex) || []).filter(l => !l.endsWith('..') && l.length < 500);
+
+              for (const link of links) {
+                if (!seenLinks.has(link)) {
+                  seenLinks.add(link);
+                  allFoundLinks.push({ url: link, source: '91panta', query });
+                }
+              }
+
+              if (links.length > 0 && !sources.includes('91panta')) {
+                sources.push('91panta');
+              }
+            }
+          } catch (e) {
+            console.error(`91panta search failed for "${query}":`, e.message);
+          }
+
+          await new Promise(r => setTimeout(r, 500));
+        }
+
+        const mainTitle = movie.title_cn || movie.title;
+        const googleSearchUrl = `https://www.google.com/search?q=site:yun.139.com+${encodeURIComponent(mainTitle)}`;
+
+        try {
+          const googleResp = await fetchWithTimeout(googleSearchUrl, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
+            }
+          });
+
+          if (googleResp && googleResp.ok) {
+            const html = await googleResp.text();
+            const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%]+)/g;
+            let links = (html.match(linkRegex) || []).filter(l => !l.endsWith('..') && l.length < 500);
+
+            for (const link of links) {
+              if (!seenLinks.has(link)) {
+                seenLinks.add(link);
+                allFoundLinks.push({ url: link, source: 'google_139', query: mainTitle });
+              }
+            }
+
+            if (links.length > 0 && !sources.includes('google_139')) {
+              sources.push('google_139');
+            }
+          }
+        } catch (e) {
+          console.error(`Google 139 search failed:`, e.message);
+        }
+
+        const added = [];
+        for (const item of allFoundLinks) {
+          await env.DB.prepare(`
+            INSERT INTO resources (movie_id, url, source, verified)
+            VALUES (?, ?, ?, 1)
+          `).bind(movieId, item.url, item.source).run();
+          added.push(item.url);
+        }
+
+        return Response.json({
           movie: movie,
-          resources_found: links.length,
+          sources_searched: sources,
+          resources_found: allFoundLinks.length,
           resources_added: added.length,
-          links: links 
+          links: allFoundLinks.map(l => l.url)
         }, { headers: corsHeaders });
       }
 

@@ -1719,33 +1719,51 @@
         linksEl.innerHTML = linksHtml;
 
         const resourcesEl = document.getElementById('detailResources');
-        // Generate search links
-        const searchTitle = encodeURIComponent(m.title_cn || m.title);
-        const googleSearchTitle = m.title_cn || m.title;
-        const searchUrl91 = `https://91panta.cn/search?keyword=${searchTitle}`;
-        const google139 = `https://www.google.com/search?q=site:yun.139.com/shareweb+${encodeURIComponent(googleSearchTitle)}`;
-        const googleAli = `https://www.google.com/search?q=site:www.aliyundrive.com+${encodeURIComponent(googleSearchTitle)}`;
-        
-        resourcesEl.innerHTML = `
-          <div class="resource-item">
-            <a href="${searchUrl91}" target="_blank" class="resource-link">
-              <span>🔍</span>
-              <span class="resource-url">91panta 搜索: ${googleSearchTitle}</span>
-            </a>
-          </div>
-          <div class="resource-item">
-            <a href="${google139}" target="_blank" class="resource-link">
-              <span>🔍</span>
-              <span class="resource-url">Google 139云搜索: ${googleSearchTitle}</span>
-            </a>
-          </div>
-          <div class="resource-item">
-            <a href="${googleAli}" target="_blank" class="resource-link">
-              <span>🔍</span>
-              <span class="resource-url">Google 阿里云盘搜索: ${googleSearchTitle}</span>
-            </a>
-          </div>
-        `;
+        const searchTitle = m.title_cn || m.title;
+
+        function renderStoredResources(resources) {
+          if (!resources || resources.length === 0) {
+            return `<div class="no-resource">暂无资源，点击下方按钮搜索</div>`;
+          }
+          return resources.map(r => `
+            <div class="resource-item">
+              <a href="${r.url}" target="_blank" class="resource-link">
+                <span>📁</span>
+                <span class="resource-url">${r.url.length > 50 ? r.url.substring(0, 50) + '...' : r.url}</span>
+              </a>
+              <button class="btn-delete" onclick="deleteResource('${m.id}', ${r.id})">删除</button>
+            </div>
+          `).join('');
+        }
+
+        function renderSearchButtons() {
+          const encodedTitle = encodeURIComponent(searchTitle);
+          return `
+            <div class="resources-header">
+              <span class="resources-count">${(m.resources && m.resources.length) || 0} 个资源</span>
+              <button class="btn-refresh" id="searchResourcesBtn" onclick="refreshResources('${m.id}')">
+                🔍 搜索资源
+              </button>
+            </div>
+            <div class="resource-external-links" style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+              <a href="https://91panta.cn/search?keyword=${encodedTitle}" target="_blank" class="resource-link" style="font-size:0.75rem;">
+                <span>🌐</span>
+                <span class="resource-url">91panta 搜索</span>
+              </a>
+              <a href="https://www.google.com/search?q=site:yun.139.com/shareweb+${encodedTitle}" target="_blank" class="resource-link" style="font-size:0.75rem;">
+                <span>🌐</span>
+                <span class="resource-url">Google 139云</span>
+              </a>
+              <a href="https://www.google.com/search?q=site:www.aliyundrive.com+${encodedTitle}" target="_blank" class="resource-link" style="font-size:0.75rem;">
+                <span>🌐</span>
+                <span class="resource-url">阿里云盘</span>
+              </a>
+            </div>
+          `;
+        }
+
+        resourcesEl.innerHTML = renderStoredResources(m.resources) + renderSearchButtons();
+        resourcesEl.dataset.movieId = m.id;
 
         document.getElementById('homePage').style.display = 'none';
         document.getElementById('detailPage').classList.add('active');
