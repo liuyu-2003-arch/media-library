@@ -456,43 +456,6 @@ export default {
         return Response.json({ status: 'ok' }, { headers: corsHeaders });
       }
 
-      if (path === '/api/debug/91panta') {
-        const keyword = new URL(request.url).searchParams.get('keyword') || 'Scream 7';
-        const testUrl = new URL(request.url).searchParams.get('url');
-        
-        if (testUrl) {
-          const resp = await fetch(testUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' }
-          });
-          const html = await resp.text();
-          const expiredPatterns = ['分享已被取消', '分享已过期', '链接不存在', '该文件已被删除', '已被取消', '无法查看', '已过期'];
-          const foundErrors = expiredPatterns.filter(p => html.includes(p));
-          return Response.json({
-            url: testUrl,
-            status: resp.status,
-            htmlLength: html.length,
-            isValid: resp.ok && html.length > 1000 && foundErrors.length === 0,
-            foundErrors,
-            snippet: html.substring(0, 300)
-          }, { headers: corsHeaders });
-        }
-        
-        const resp = await fetch(`${PANTALIST_URL}?keyword=${encodeURIComponent(keyword)}`, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' }
-        });
-        const html = await resp.text();
-        const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[a-zA-Z0-9/_.#?=&%-]+)/g;
-        const rawLinks = html.match(linkRegex) || [];
-        const cleanLinks = rawLinks.map(l => l.replace(/\.+$/g, '')).filter(l => l.length > 30);
-        return Response.json({
-          htmlLength: html.length,
-          rawLinksCount: rawLinks.length,
-          cleanLinksCount: cleanLinks.length,
-          rawSample: rawLinks.slice(0, 3),
-          cleanSample: cleanLinks.slice(0, 5)
-        }, { headers: corsHeaders });
-      }
-
       if (path === '/api/migrate' && request.method === 'POST') {
         try {
           await env.DB.prepare(`ALTER TABLE resources ADD COLUMN status TEXT DEFAULT 'unknown'`).run();
