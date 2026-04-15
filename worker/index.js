@@ -231,11 +231,12 @@ export default {
           return Response.json({ error: 'Movie not found' }, { status: 404 });
         }
 
-        const searchTitles = [
-          movie.title_cn || movie.title,
+        const mainTitle = movie.title_cn || movie.title;
+        const searchTitles = [...new Set([
+          mainTitle,
           movie.title,
-          movie.original_title || ''
-        ].filter(t => t && t !== (movie.title_cn || movie.title)).slice(0, 3);
+          movie.original_title
+        ].filter(t => t && t.length > 1))].slice(0, 3);
 
         const seenLinks = new Set();
         const { results: existingResources } = await env.DB.prepare(
@@ -261,37 +262,15 @@ export default {
 
         async function validateLink(url) {
           try {
-            if (url.includes('139.com')) {
-              const resp = await fetchWithTimeout(url, {
-                method: 'GET',
-                headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
-                redirect: 'follow'
-              }, 8000);
-              if (!resp || !resp.ok) return false;
-              const html = await resp.text();
-              const expiredPatterns = [
-                '分享已被取消',
-                '分享已过期',
-                '链接不存在',
-                '该文件已被删除',
-                '已过期',
-                '已被取消',
-                '无法查看',
-                'error',
-                '404'
-              ];
-              const lowerHtml = html.toLowerCase();
-              for (const pattern of expiredPatterns) {
-                if (lowerHtml.includes(pattern.toLowerCase())) return false;
-              }
-              if (html.includes('shareweb') || html.includes('fileId') || html.includes('fileName')) return true;
-              return html.length > 5000;
+            if (url.includes('139.com') && url.includes('shareweb/#/w/i/')) {
+              const id = url.match(/\/w\/i\/([a-z0-9]+)/);
+              return id && id[1].length >= 10;
             }
             const resp = await fetchWithTimeout(url, {
               method: 'HEAD',
               headers: { 'User-Agent': 'Mozilla/5.0' },
               redirect: 'follow'
-            }, 5000);
+            }, 3000);
             if (resp) {
               return resp.ok || resp.status === 403;
             }
@@ -302,10 +281,9 @@ export default {
         }
 
         function extractLinks(html) {
-          const linkRegex139 = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%?]+)/g;
+          const linkRegex139 = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[a-zA-Z0-9/_.#?=&%-]+)/g;
           const linkRegexAli = /(https?:\/\/(?:www\.)?(?:aliyundrive\.com|alipan\.com)\/s\/[\w\-]+)/g;
-          let links139 = (html.match(linkRegex139) || []).filter(l => !l.endsWith('..') && l.length < 500);
-          links139 = links139.map(l => l.endsWith('.') ? l.replace(/\.*$/, '') : l);
+          let links139 = (html.match(linkRegex139) || []).map(l => l.replace(/\.+$/g, '')).filter(l => l.length > 30 && l.length < 500);
           const linksAli = (html.match(linkRegexAli) || []).filter(l => l.length < 200);
           return [...links139, ...linksAli];
         }
@@ -343,10 +321,8 @@ export default {
             console.error(`91panta search failed for "${query}":`, e.message);
           }
 
-          await new Promise(r => setTimeout(r, 500));
+          await new Promise(r => setTimeout(r, 100));
         }
-
-        const mainTitle = movie.title_cn || movie.title;
 
         const googleSearches = [
           { url: `https://www.google.com/search?q=site:yun.139.com+${encodeURIComponent(mainTitle)}`, source: 'google_139' },
@@ -413,6 +389,10 @@ export default {
         async function validateExistingLink(url) {
           try {
             if (url.includes('139.com')) {
+              if (url.includes('shareweb/#/w/i/')) {
+                const id = url.match(/\/w\/i\/([a-z0-9]+)/);
+                return id && id[1].length >= 10;
+              }
               const controller = new AbortController();
               const timeoutId = setTimeout(() => controller.abort(), 8000);
               const resp = await fetch(url, {
@@ -424,12 +404,11 @@ export default {
               clearTimeout(timeoutId);
               if (!resp || !resp.ok) return false;
               const html = await resp.text();
-              const expiredPatterns = ['分享已被取消', '分享已过期', '链接不存在', '该文件已被删除', '已过期', '已被取消', '无法查看'];
-              const lowerHtml = html.toLowerCase();
+              const expiredPatterns = ['分享已被取消', '分享已过期', '链接不存在', '该文件已被删除', '已被取消', '无法查看', '已过期'];
               for (const pattern of expiredPatterns) {
-                if (lowerHtml.includes(pattern.toLowerCase())) return false;
+                if (html.includes(pattern)) return false;
               }
-              return html.length > 5000;
+              return html.length > 1000;
             }
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -475,6 +454,43 @@ export default {
       // Health check
       if (path === '/api/health') {
         return Response.json({ status: 'ok' }, { headers: corsHeaders });
+      }
+
+      if (path === '/api/debug/91panta') {
+        const keyword = new URL(request.url).searchParams.get('keyword') || 'Scream 7';
+        const testUrl = new URL(request.url).searchParams.get('url');
+        
+        if (testUrl) {
+          const resp = await fetch(testUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' }
+          });
+          const html = await resp.text();
+          const expiredPatterns = ['分享已被取消', '分享已过期', '链接不存在', '该文件已被删除', '已被取消', '无法查看', '已过期'];
+          const foundErrors = expiredPatterns.filter(p => html.includes(p));
+          return Response.json({
+            url: testUrl,
+            status: resp.status,
+            htmlLength: html.length,
+            isValid: resp.ok && html.length > 1000 && foundErrors.length === 0,
+            foundErrors,
+            snippet: html.substring(0, 300)
+          }, { headers: corsHeaders });
+        }
+        
+        const resp = await fetch(`${PANTALIST_URL}?keyword=${encodeURIComponent(keyword)}`, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' }
+        });
+        const html = await resp.text();
+        const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[a-zA-Z0-9/_.#?=&%-]+)/g;
+        const rawLinks = html.match(linkRegex) || [];
+        const cleanLinks = rawLinks.map(l => l.replace(/\.+$/g, '')).filter(l => l.length > 30);
+        return Response.json({
+          htmlLength: html.length,
+          rawLinksCount: rawLinks.length,
+          cleanLinksCount: cleanLinks.length,
+          rawSample: rawLinks.slice(0, 3),
+          cleanSample: cleanLinks.slice(0, 5)
+        }, { headers: corsHeaders });
       }
 
       if (path === '/api/migrate' && request.method === 'POST') {
