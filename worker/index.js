@@ -259,6 +259,30 @@ export default {
           }
         }
 
+        async function validateLink(url) {
+          try {
+            const resp = await fetchWithTimeout(url, {
+              method: 'HEAD',
+              headers: { 'User-Agent': 'Mozilla/5.0' },
+              redirect: 'follow'
+            }, 5000);
+            if (resp) {
+              return resp.ok || resp.status === 403;
+            }
+            return false;
+          } catch {
+            return false;
+          }
+        }
+
+        function extractLinks(html) {
+          const linkRegex139 = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%]+)/g;
+          const linkRegexAli = /(https?:\/\/(?:www\.)?(?:aliyundrive\.com|alipan\.com)\/s\/[\w\-]+)/g;
+          const links139 = (html.match(linkRegex139) || []).filter(l => !l.endsWith('..') && l.length < 500);
+          const linksAli = (html.match(linkRegexAli) || []).filter(l => l.length < 200);
+          return [...links139, ...linksAli];
+        }
+
         for (const query of searchTitles) {
           const searchUrl = `${PANTALIST_URL}?keyword=${encodeURIComponent(query)}`;
 
@@ -271,13 +295,16 @@ export default {
 
             if (searchResp && searchResp.ok) {
               const html = await searchResp.text();
-              const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%]+)/g;
-              let links = (html.match(linkRegex) || []).filter(l => !l.endsWith('..') && l.length < 500);
+              const links = extractLinks(html);
 
               for (const link of links) {
                 if (!seenLinks.has(link)) {
                   seenLinks.add(link);
-                  allFoundLinks.push({ url: link, source: '91panta', query });
+                  const isValid = await validateLink(link);
+                  if (isValid) {
+                    const source = link.includes('139.com') ? '91panta_139' : '91panta_ali';
+                    allFoundLinks.push({ url: link, source, query, valid: true });
+                  }
                 }
               }
 
@@ -293,42 +320,50 @@ export default {
         }
 
         const mainTitle = movie.title_cn || movie.title;
-        const googleSearchUrl = `https://www.google.com/search?q=site:yun.139.com+${encodeURIComponent(mainTitle)}`;
 
-        try {
-          const googleResp = await fetchWithTimeout(googleSearchUrl, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
-            }
-          });
+        const googleSearches = [
+          { url: `https://www.google.com/search?q=site:yun.139.com+${encodeURIComponent(mainTitle)}`, source: 'google_139' },
+          { url: `https://www.google.com/search?q=site:aliyundrive.com+${encodeURIComponent(mainTitle)}`, source: 'google_ali' }
+        ];
 
-          if (googleResp && googleResp.ok) {
-            const html = await googleResp.text();
-            const linkRegex = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[\w\-\.~:\/@#!$&'()*+,;=%]+)/g;
-            let links = (html.match(linkRegex) || []).filter(l => !l.endsWith('..') && l.length < 500);
+        for (const gs of googleSearches) {
+          try {
+            const googleResp = await fetchWithTimeout(gs.url, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36'
+              }
+            });
 
-            for (const link of links) {
-              if (!seenLinks.has(link)) {
-                seenLinks.add(link);
-                allFoundLinks.push({ url: link, source: 'google_139', query: mainTitle });
+            if (googleResp && googleResp.ok) {
+              const html = await googleResp.text();
+              const links = extractLinks(html);
+
+              for (const link of links) {
+                if (!seenLinks.has(link)) {
+                  seenLinks.add(link);
+                  const isValid = await validateLink(link);
+                  if (isValid) {
+                    allFoundLinks.push({ url: link, source: gs.source, query: mainTitle, valid: true });
+                  }
+                }
+              }
+
+              if (links.length > 0 && !sources.includes(gs.source)) {
+                sources.push(gs.source);
               }
             }
-
-            if (links.length > 0 && !sources.includes('google_139')) {
-              sources.push('google_139');
-            }
+          } catch (e) {
+            console.error(`${gs.source} search failed:`, e.message);
           }
-        } catch (e) {
-          console.error(`Google 139 search failed:`, e.message);
         }
 
         const added = [];
         for (const item of allFoundLinks) {
           await env.DB.prepare(`
-            INSERT INTO resources (movie_id, url, source, verified)
-            VALUES (?, ?, ?, 1)
-          `).bind(movieId, item.url, item.source).run();
-          added.push(item.url);
+            INSERT INTO resources (movie_id, url, source, verified, status, last_checked)
+            VALUES (?, ?, ?, ?, ?, datetime('now'))
+          `).bind(movieId, item.url, item.source, item.valid ? 1 : 0, item.valid ? 'valid' : 'expired').run();
+          added.push({ url: item.url, valid: item.valid });
         }
 
         return Response.json({
@@ -336,7 +371,52 @@ export default {
           sources_searched: sources,
           resources_found: allFoundLinks.length,
           resources_added: added.length,
-          links: allFoundLinks.map(l => l.url)
+          valid_resources: added.filter(a => a.valid).length,
+          links: added
+        }, { headers: corsHeaders });
+      }
+
+      // Route: POST /api/movies/:id/resources/validate - Validate existing resources
+      if (path.match(/^\/api\/movies\/([^/]+)\/resources\/validate$/) && request.method === 'POST') {
+        const movieId = path.match(/^\/api\/movies\/([^/]+)\/resources\/validate$/)[1];
+
+        const { results: resources } = await env.DB.prepare(
+          'SELECT * FROM resources WHERE movie_id = ?'
+        ).bind(movieId).all();
+
+        async function validateLink(url) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const resp = await fetch(url, {
+              method: 'HEAD',
+              headers: { 'User-Agent': 'Mozilla/5.0' },
+              redirect: 'follow',
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            return resp.ok || resp.status === 403;
+          } catch {
+            return false;
+          }
+        }
+
+        const results = [];
+        for (const resource of resources) {
+          const isValid = await validateLink(resource.url);
+          const status = isValid ? 'valid' : 'expired';
+          await env.DB.prepare(
+            'UPDATE resources SET status = ?, last_checked = datetime(\'now\') WHERE id = ?'
+          ).bind(status, resource.id).run();
+          results.push({ id: resource.id, url: resource.url, status });
+          await new Promise(r => setTimeout(r, 200));
+        }
+
+        return Response.json({
+          validated: results.length,
+          valid: results.filter(r => r.status === 'valid').length,
+          expired: results.filter(r => r.status === 'expired').length,
+          results
         }, { headers: corsHeaders });
       }
 

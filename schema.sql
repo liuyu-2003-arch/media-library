@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS resources (
     name TEXT,
     source TEXT DEFAULT '91panta',
     verified INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'unknown' CHECK(status IN ('valid', 'expired', 'unknown')),
+    last_checked TEXT,
     added_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
     UNIQUE(movie_id, url)
