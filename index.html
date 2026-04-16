@@ -1733,7 +1733,7 @@
             const icon = isAli ? '☁️' : '📁';
             const sourceLabel = isAli ? '阿里云盘' : '139云盘';
             return `
-              <div class="resource-item">
+              <div class="resource-item" data-resource-id="${r.id}">
                 <a href="${r.url}" target="_blank" class="resource-link">
                   <span>${icon}</span>
                   <span class="resource-url" title="${r.url}">${sourceLabel} - ${r.url.substring(0, 40)}...</span>
