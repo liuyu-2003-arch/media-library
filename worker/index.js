@@ -265,123 +265,27 @@ export default {
         return Response.json({ status: 'added', url }, { headers: corsHeaders });
       }
 
-        const mainTitle = movie.title_cn || movie.title;
-        const searchQuery = movie.year ? `${mainTitle} ${movie.year}` : mainTitle;
-        const searchTitles = [...new Set([
-          searchQuery,
-          mainTitle,
-          movie.title,
-          movie.original_title
-        ].filter(t => t && t.length > 1))].slice(0, 3);
+      if (path.match(/^\/api\/movies\/([^/]+)\/resources$/) && request.method === 'PUT') {
+        const movieId = path.match(/^\/api\/movies\/([^/]+)\/resources$/)[1];
+        const { url } = await request.json();
 
-        const seenLinks = new Set();
-        const { results: existingResources } = await env.DB.prepare(
-          'SELECT url FROM resources WHERE movie_id = ?'
-        ).bind(movieId).all();
-        existingResources.forEach(r => seenLinks.add(r.url));
-
-        const allFoundLinks = [];
-        const sources = [];
-
-        async function fetchWithTimeout(url, options = {}, timeout = 8000) {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), timeout);
-          try {
-            const resp = await fetch(url, { ...options, signal: controller.signal });
-            clearTimeout(timeoutId);
-            return resp;
-          } catch (e) {
-            clearTimeout(timeoutId);
-            return null;
-          }
+        if (!url) {
+          return Response.json({ error: 'URL required' }, { status: 400 });
         }
 
-        async function validateLink(url) {
-          try {
-            if (url.includes('139.com') && url.includes('shareweb/#/w/i/')) {
-              const id = url.match(/\/w\/i\/([a-z0-9]+)/);
-              return id && id[1].length >= 10;
-            }
-            const resp = await fetchWithTimeout(url, {
-              method: 'HEAD',
-              headers: { 'User-Agent': 'Mozilla/5.0' },
-              redirect: 'follow'
-            }, 3000);
-            if (resp) {
-              return resp.ok || resp.status === 403;
-            }
-            return false;
-          } catch {
-            return false;
-          }
+        const is139 = url.includes('139.com');
+        const isAli = url.includes('aliyundrive.com') || url.includes('alipan.com');
+        if (!is139 && !isAli) {
+          return Response.json({ error: '仅支持139云盘和阿里云盘链接' }, { status: 400 });
         }
 
-        function extractLinks(html) {
-          const linkRegex139 = /(https?:\/\/(?:yun|caiyun)\.139\.com\/[a-zA-Z0-9/_.#?=&%-]+)/g;
-          const linkRegexAli = /(https?:\/\/(?:www\.)?(?:aliyundrive\.com|alipan\.com)\/s\/[\w\-]+)/g;
-          let links139 = (html.match(linkRegex139) || []).map(l => l.replace(/\.+$/g, '')).filter(l => l.length > 30 && l.length < 500);
-          const linksAli = (html.match(linkRegexAli) || []).filter(l => l.length < 200);
-          return [...links139, ...linksAli];
-        }
+        const source = is139 ? '139' : 'ali';
+        await env.DB.prepare(`
+          INSERT OR IGNORE INTO resources (movie_id, url, source, verified, status)
+          VALUES (?, ?, ?, 1, 'valid')
+        `).bind(movieId, url, source).run();
 
-        const googleSearches = [
-          { url: `https://www.google.com/search?q=site:yun.139.com+"${encodeURIComponent(mainTitle)}"`, source: 'google_139' },
-          { url: `https://www.google.com/search?q=site:caiyun.139.com+"${encodeURIComponent(mainTitle)}"`, source: 'google_caiyun' },
-          { url: `https://www.google.com/search?q=site:aliyundrive.com+"${encodeURIComponent(mainTitle)}"`, source: 'google_ali' },
-          { url: `https://www.google.com/search?q=site:alipan.com+"${encodeURIComponent(mainTitle)}"`, source: 'google_alipan' }
-        ];
-
-        for (const gs of googleSearches) {
-          try {
-            const googleResp = await fetchWithTimeout(gs.url, {
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml',
-                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
-              }
-            });
-
-            if (googleResp && googleResp.ok) {
-              const html = await googleResp.text();
-              const links = extractLinks(html);
-
-              for (const link of links) {
-                if (!seenLinks.has(link)) {
-                  seenLinks.add(link);
-                  const isValid = await validateLink(link);
-                  if (isValid) {
-                    allFoundLinks.push({ url: link, source: gs.source, query: mainTitle, valid: true });
-                  }
-                }
-              }
-
-              if (links.length > 0 && !sources.includes(gs.source)) {
-                sources.push(gs.source);
-              }
-            }
-          } catch (e) {
-            console.error(`${gs.source} search failed:`, e.message);
-          }
-          await new Promise(r => setTimeout(r, 300));
-        }
-
-        const added = [];
-        for (const item of allFoundLinks) {
-          await env.DB.prepare(`
-            INSERT INTO resources (movie_id, url, source, verified, status, last_checked)
-            VALUES (?, ?, ?, ?, ?, datetime('now'))
-          `).bind(movieId, item.url, item.source, item.valid ? 1 : 0, item.valid ? 'valid' : 'expired').run();
-          added.push({ url: item.url, valid: item.valid });
-        }
-
-        return Response.json({
-          movie: movie,
-          sources_searched: sources,
-          resources_found: allFoundLinks.length,
-          resources_added: added.length,
-          valid_resources: added.filter(a => a.valid).length,
-          links: added
-        }, { headers: corsHeaders });
+        return Response.json({ status: 'added', url }, { headers: corsHeaders });
       }
 
       if (path.match(/^\/api\/movies\/([^/]+)\/resources\/validate$/) && request.method === 'POST') {
