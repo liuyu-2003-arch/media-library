@@ -1346,6 +1346,8 @@
       'Avatar 3': '阿凡达3',
       'Zootopia 2': '疯狂动物城2',
       'Ready or Not 2': '准备好了没2',
+      'They Will Kill You': '杀的就是你',
+      'The Housemaid': '女佣',
     };
     function getChineseTitle(m) {
       return titleCNMap[m.title] || m.title_cn || m.titleCn || m.title;
@@ -1745,7 +1747,7 @@
         }
 
         function renderSearchButtons() {
-          const movieName = m.title || '';
+          const movieName = getChineseTitle(m);
           const year = m.year || '';
           const searchQuery = year ? `${movieName} ${year}` : movieName;
           const encodedQuery = encodeURIComponent(searchQuery);
