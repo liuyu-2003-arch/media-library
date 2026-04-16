@@ -1780,6 +1780,13 @@
                 <span class="resource-url">Google 阿里云盘</span>
               </a>
             </div>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-color);">
+              <div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:8px;">手动添加资源链接</div>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="resourceUrlInput" placeholder="粘贴139云盘或阿里云盘链接" style="flex:1;padding:8px 12px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:6px;color:var(--text-primary);font-size:0.8rem;">
+                <button onclick="addResourceLink('${m.id}')" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:0.8rem;cursor:pointer;">添加</button>
+              </div>
+            </div>
           `;
         }
 
@@ -1848,35 +1855,43 @@
       }
     }
 
-    async function refreshResources(movieId) {
-      const btn = document.querySelector('.btn-refresh');
-      if (btn) {
-        btn.textContent = '清理中...';
-        btn.disabled = true;
+    async function addResourceLink(movieId) {
+      const input = document.getElementById('resourceUrlInput');
+      const url = input.value.trim();
+      if (!url) {
+        showToast('请输入资源链接');
+        return;
       }
+      if (!url.includes('139.com') && !url.includes('aliyundrive.com') && !url.includes('alipan.com')) {
+        showToast('仅支持139云盘和阿里云盘链接');
+        return;
+      }
+      try {
+        const resp = await fetch(`${API_BASE}/api/movies/${movieId}/resources`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const data = await resp.json();
+        if (data.status === 'added') {
+          showToast('资源已添加');
+          input.value = '';
+          await openMovie(movieId);
+        } else {
+          showToast(data.error || '添加失败');
+        }
+      } catch (e) {
+        showToast('添加失败');
+      }
+    }
 
+    async function refreshResources(movieId) {
       try {
         await fetch(`${API_BASE}/api/movies/${movieId}/resources/expired`, { method: 'DELETE' });
-
-        if (btn) btn.textContent = '搜索中...';
-
-        const resp = await fetch(`${API_BASE}/api/movies/${movieId}/resources`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({})
-        });
-
-        const data = await resp.json();
-        const validCount = data.valid_resources || 0;
-        showToast(`找到 ${validCount} 个有效资源`);
+        showToast('已清理失效资源');
         await openMovie(movieId);
       } catch (e) {
-        showToast('搜索失败');
-      }
-
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = '🔍 搜索资源';
+        showToast('清理失败');
       }
     }
 

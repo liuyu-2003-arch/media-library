@@ -231,6 +231,40 @@ export default {
           return Response.json({ error: 'Movie not found' }, { status: 404 });
         }
 
+        const { results: resources } = await env.DB.prepare(
+          'SELECT * FROM resources WHERE movie_id = ? AND status != ? ORDER BY added_at DESC'
+        ).bind(movieId, 'expired').all();
+
+        return Response.json({
+          movie: movie,
+          resources: resources,
+          message: '请使用下方链接手动搜索资源，然后通过添加链接功能保存'
+        }, { headers: corsHeaders });
+      }
+
+      if (path.match(/^\/api\/movies\/([^/]+)\/resources$/) && request.method === 'PUT') {
+        const movieId = path.match(/^\/api\/movies\/([^/]+)\/resources$/)[1];
+        const { url } = await request.json();
+
+        if (!url) {
+          return Response.json({ error: 'URL required' }, { status: 400 });
+        }
+
+        const is139 = url.includes('139.com');
+        const isAli = url.includes('aliyundrive.com') || url.includes('alipan.com');
+        if (!is139 && !isAli) {
+          return Response.json({ error: '仅支持139云盘和阿里云盘链接' }, { status: 400 });
+        }
+
+        const source = is139 ? '139' : 'ali';
+        await env.DB.prepare(`
+          INSERT OR IGNORE INTO resources (movie_id, url, source, verified, status)
+          VALUES (?, ?, ?, 1, 'valid')
+        `).bind(movieId, url, source).run();
+
+        return Response.json({ status: 'added', url }, { headers: corsHeaders });
+      }
+
         const mainTitle = movie.title_cn || movie.title;
         const searchQuery = movie.year ? `${mainTitle} ${movie.year}` : mainTitle;
         const searchTitles = [...new Set([
